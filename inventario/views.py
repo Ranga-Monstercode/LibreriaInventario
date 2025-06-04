@@ -71,22 +71,14 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
-    # Si es superusuario, redirigir al panel de administración
-    if request.user.is_superuser:
+    if es_administrador(request.user):
         return render(request, 'inventario/dashboard_admin.html')
-    
-    try:
-        if es_administrador(request.user):
-            return render(request, 'inventario/dashboard_admin.html')
-        elif es_jefe_bodega(request.user):
-            return render(request, 'inventario/dashboard_jefe.html')
-        elif es_bodeguero(request.user):
-            return render(request, 'inventario/dashboard_bodeguero.html')
-        else:
-            messages.error(request, 'No tiene un rol asignado en el sistema')
-            return redirect('logout')
-    except Perfil.DoesNotExist:
-        messages.error(request, 'No tiene un perfil asignado en el sistema')
+    elif es_jefe_bodega(request.user):
+        return render(request, 'inventario/dashboard_jefe.html')
+    elif es_bodeguero(request.user):
+        return render(request, 'inventario/dashboard_bodeguero.html')
+    else:
+        messages.error(request, 'No tiene un rol asignado en el sistema')
         return redirect('logout')
 
 @login_required
