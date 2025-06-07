@@ -2,77 +2,330 @@
 
 {% block title %}Dashboard Jefe de Bodega{% endblock %}
 
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    [data-bs-theme="dark"] .dashboard-header {
+        background: linear-gradient(135deg, #1e7e34 0%, #17a2b8 100%);
+    }
+
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+
+    .dashboard-header h1 {
+        margin: 0;
+        font-weight: 300;
+        position: relative;
+        z-index: 1;
+    }
+
+    .dashboard-header .subtitle {
+        opacity: 0.9;
+        margin-top: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .management-card {
+        height: 100%;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: var(--card-bg);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        position: relative;
+    }
+
+    .management-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #28a745, #20c997);
+    }
+
+    .management-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    [data-bs-theme="dark"] .management-card:hover {
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .management-card .card-body {
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .management-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .management-card:hover .management-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .management-card .card-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .management-card .card-text {
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .btn-management {
+        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        margin: 0.25rem;
+        min-width: 120px;
+    }
+
+    .btn-management:hover {
+        transform: translateY(-2px);
+    }
+
+    .quick-stats {
+        background: rgba(40, 167, 69, 0.1);
+        border-left: 4px solid #28a745;
+        padding: 1.5rem;
+        border-radius: 0 10px 10px 0;
+        margin-bottom: 2rem;
+    }
+
+    [data-bs-theme="dark"] .quick-stats {
+        background: rgba(40, 167, 69, 0.2);
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #28a745;
+        display: block;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .feature-highlight {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(32, 201, 151, 0.1) 100%);
+        border: 2px dashed #28a745;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    [data-bs-theme="dark"] .feature-highlight {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.2) 0%, rgba(32, 201, 151, 0.2) 100%);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">Dashboard de Jefe de Bodega</h1>
+<div class="dashboard-header">
+    <h1><i class="fas fa-user-tie"></i> Dashboard de Jefe de Bodega</h1>
+    <p class="subtitle">Bienvenido, {{ user.username }}. Gestiona el inventario y supervisa las operaciones.</p>
+</div>
+
+<div class="quick-stats">
+    <h5><i class="fas fa-tachometer-alt"></i> Resumen Rápido</h5>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-item">
+                <span class="stat-number">{{ total_productos|default:"0" }}</span>
+                <span class="stat-label">Productos</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-item">
+                <span class="stat-number">{{ total_bodegas|default:"0" }}</span>
+                <span class="stat-label">Bodegas</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-item">
+                <span class="stat-number">{{ total_editoriales|default:"0" }}</span>
+                <span class="stat-label">Editoriales</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-item">
+                <span class="stat-number">{{ movimientos_mes|default:"0" }}</span>
+                <span class="stat-label">Movimientos/Mes</span>
+            </div>
+        </div>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card h-100">
+        <div class="card management-card">
             <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-book"></i> Gestión de Productos</h5>
-                <p class="card-text">Administre los productos del inventario.</p>
-                <a href="{% url 'listar_productos' %}" class="btn btn-primary">Ver Productos</a>
-                <a href="{% url 'crear_producto' %}" class="btn btn-success">Crear Producto</a>
+                <div class="management-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h5 class="card-title">Gestión de Productos</h5>
+                <p class="card-text">Administre el catálogo completo de libros y productos de la librería.</p>
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a href="{% url 'listar_productos' %}" class="btn btn-primary btn-management">
+                        <i class="fas fa-list"></i> Ver Productos
+                    </a>
+                    <a href="{% url 'crear_producto' %}" class="btn btn-success btn-management">
+                        <i class="fas fa-plus"></i> Crear Producto
+                    </a>
+                </div>
             </div>
         </div>
     </div>
     
     <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card h-100">
+        <div class="card management-card">
             <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-warehouse"></i> Gestión de Bodegas</h5>
-                <p class="card-text">Administre las bodegas de la empresa.</p>
-                <a href="{% url 'listar_bodegas' %}" class="btn btn-primary">Ver Bodegas</a>
-                <a href="{% url 'crear_bodega' %}" class="btn btn-success">Crear Bodega</a>
+                <div class="management-icon">
+                    <i class="fas fa-warehouse"></i>
+                </div>
+                <h5 class="card-title">Gestión de Bodegas</h5>
+                <p class="card-text">Administre las ubicaciones de almacenamiento y su capacidad.</p>
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a href="{% url 'listar_bodegas' %}" class="btn btn-primary btn-management">
+                        <i class="fas fa-list"></i> Ver Bodegas
+                    </a>
+                    <a href="{% url 'crear_bodega' %}" class="btn btn-success btn-management">
+                        <i class="fas fa-plus"></i> Crear Bodega
+                    </a>
+                </div>
             </div>
         </div>
     </div>
     
     <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card h-100">
+        <div class="card management-card">
             <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-building"></i> Gestión de Editoriales</h5>
-                <p class="card-text">Administre las editoriales de los productos.</p>
-                <a href="{% url 'listar_editoriales' %}" class="btn btn-primary">Ver Editoriales</a>
-                <a href="{% url 'crear_editorial' %}" class="btn btn-success">Crear Editorial</a>
+                <div class="management-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h5 class="card-title">Gestión de Editoriales</h5>
+                <p class="card-text">Mantenga actualizada la información de las casas editoriales.</p>
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a href="{% url 'listar_editoriales' %}" class="btn btn-primary btn-management">
+                        <i class="fas fa-list"></i> Ver Editoriales
+                    </a>
+                    <a href="{% url 'crear_editorial' %}" class="btn btn-success btn-management">
+                        <i class="fas fa-plus"></i> Crear Editorial
+                    </a>
+                </div>
             </div>
         </div>
     </div>
     
     <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card h-100">
+        <div class="card management-card">
             <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-pen-fancy"></i> Gestión de Autores</h5>
-                <p class="card-text">Administre los autores de los productos.</p>
-                <a href="{% url 'listar_autores' %}" class="btn btn-primary">Ver Autores</a>
-                <a href="{% url 'crear_autor' %}" class="btn btn-success">Crear Autor</a>
+                <div class="management-icon">
+                    <i class="fas fa-pen-fancy"></i>
+                </div>
+                <h5 class="card-title">Gestión de Autores</h5>
+                <p class="card-text">Administre la base de datos de autores y escritores.</p>
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a href="{% url 'listar_autores' %}" class="btn btn-primary btn-management">
+                        <i class="fas fa-list"></i> Ver Autores
+                    </a>
+                    <a href="{% url 'crear_autor' %}" class="btn btn-success btn-management">
+                        <i class="fas fa-plus"></i> Crear Autor
+                    </a>
+                </div>
             </div>
         </div>
     </div>
     
     <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card h-100">
+        <div class="card management-card">
             <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-exchange-alt"></i> Movimientos</h5>
-                <p class="card-text">Visualice los movimientos entre bodegas.</p>
-                <a href="{% url 'listar_movimientos' %}" class="btn btn-primary">Ver Movimientos</a>
+                <div class="management-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <h5 class="card-title">Movimientos</h5>
+                <p class="card-text">Supervise todos los movimientos de inventario entre bodegas.</p>
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a href="{% url 'listar_movimientos' %}" class="btn btn-primary btn-management">
+                        <i class="fas fa-list"></i> Ver Movimientos
+                    </a>
+                </div>
             </div>
         </div>
     </div>
     
     <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card h-100">
+        <div class="card management-card">
             <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-chart-bar"></i> Informes</h5>
-                <p class="card-text">Genere informes del sistema.</p>
-                <a href="{% url 'informe_productos' %}" class="btn btn-primary">Informe de Productos</a>
-                <a href="{% url 'informe_movimientos' %}" class="btn btn-primary mt-2">Informe de Movimientos</a>
+                <div class="management-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h5 class="card-title">Informes</h5>
+                <p class="card-text">Genere reportes detallados para análisis y toma de decisiones.</p>
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a href="{% url 'informe_productos' %}" class="btn btn-info btn-management">
+                        <i class="fas fa-file-alt"></i> Productos
+                    </a>
+                    <a href="{% url 'informe_movimientos' %}" class="btn btn-warning btn-management">
+                        <i class="fas fa-chart-line"></i> Movimientos
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}

@@ -2,28 +2,385 @@
 
 {% block title %}Iniciar Sesión{% endblock %}
 
+{% block extra_css %}
+<style>
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    [data-bs-theme="dark"] .login-container {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    }
+
+    .login-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="books" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><rect width="20" height="20" fill="none"/><path d="M2 2h16v16H2z" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23books)"/></svg>') repeat;
+        opacity: 0.1;
+    }
+
+    .login-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        max-width: 400px;
+        width: 100%;
+        margin: 20px;
+        animation: slideInUp 0.6s ease-out;
+    }
+
+    [data-bs-theme="dark"] .login-card {
+        background: rgba(52, 58, 64, 0.95);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .login-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+    }
+
+    [data-bs-theme="dark"] .login-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    }
+
+    .login-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+
+    .login-header h4 {
+        margin: 0;
+        font-weight: 300;
+        font-size: 1.8rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .login-header i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .login-body {
+        padding: 2rem;
+    }
+
+    .form-floating {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-floating .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1rem 0.75rem;
+        height: auto;
+        transition: all 0.3s ease;
+    }
+
+    .form-floating .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        transform: translateY(-2px);
+    }
+
+    [data-bs-theme="dark"] .form-floating .form-control {
+        background-color: #495057;
+        border-color: #6c757d;
+        color: #fff;
+    }
+
+    [data-bs-theme="dark"] .form-floating .form-control:focus {
+        background-color: #495057;
+        border-color: #667eea;
+        color: #fff;
+    }
+
+    [data-bs-theme="dark"] .form-floating label {
+        color: #adb5bd;
+    }
+
+    .btn-login {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-login:active {
+        transform: translateY(0);
+    }
+
+    .theme-toggle-login {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 10;
+    }
+
+    .theme-toggle-login .form-check-label {
+        color: rgba(255, 255, 255, 0.8);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .theme-toggle-login .form-check-label:hover {
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .theme-toggle-login .form-check-input {
+        cursor: pointer;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes rotate {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .floating-shapes {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 0;
+    }
+
+    .floating-shapes::before,
+    .floating-shapes::after {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-shapes::before {
+        width: 100px;
+        height: 100px;
+        top: 20%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .floating-shapes::after {
+        width: 150px;
+        height: 150px;
+        bottom: 20%;
+        right: 10%;
+        animation-delay: 3s;
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .login-card {
+            margin: 10px;
+            border-radius: 15px;
+        }
+        
+        .login-header {
+            padding: 1.5rem;
+        }
+        
+        .login-header h4 {
+            font-size: 1.5rem;
+        }
+        
+        .login-header i {
+            font-size: 2.5rem;
+        }
+        
+        .login-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Iniciar Sesión</h4>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Usuario</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Contraseña</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
-                </form>
-            </div>
+<div class="login-container">
+    <div class="floating-shapes"></div>
+    
+    <!-- Toggle de tema para login -->
+    <div class="theme-toggle-login">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="loginDarkModeToggle">
+            <label class="form-check-label" for="loginDarkModeToggle">
+                <i class="fas fa-moon" id="loginThemeIcon"></i>
+                <span id="loginThemeText">Modo Oscuro</span>
+            </label>
+        </div>
+    </div>
+    
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fas fa-book-open"></i>
+            <h4>Librería "El gran Poeta"</h4>
+            <p class="mb-0" style="opacity: 0.9;">Iniciar Sesión</p>
+        </div>
+        
+        <div class="login-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Usuario" required>
+                    <label for="username">
+                        <i class="fas fa-user"></i> Usuario
+                    </label>
+                </div>
+                
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" required>
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Contraseña
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+            </form>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Script específico para la página de login
+    document.addEventListener('DOMContentLoaded', function() {
+        const html = document.documentElement;
+        const loginToggle = document.getElementById('loginDarkModeToggle');
+        const loginThemeIcon = document.getElementById('loginThemeIcon');
+        const loginThemeText = document.getElementById('loginThemeText');
+        
+        if (loginToggle && loginThemeIcon && loginThemeText) {
+            // Cargar tema guardado o detectar preferencia del sistema
+            let savedTheme = localStorage.getItem('libreria-theme');
+            
+            if (!savedTheme) {
+                savedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            
+            html.setAttribute('data-bs-theme', savedTheme);
+            loginToggle.checked = savedTheme === 'dark';
+            updateLoginThemeUI(savedTheme);
+            
+            // Event listener para el toggle de login
+            loginToggle.addEventListener('change', function() {
+                const newTheme = this.checked ? 'dark' : 'light';
+                html.setAttribute('data-bs-theme', newTheme);
+                localStorage.setItem('libreria-theme', newTheme);
+                updateLoginThemeUI(newTheme);
+                
+                // Animación del icono
+                loginThemeIcon.style.transform = 'rotate(360deg)';
+                setTimeout(() => {
+                    loginThemeIcon.style.transform = 'rotate(0deg)';
+                }, 300);
+            });
+            
+            function updateLoginThemeUI(theme) {
+                if (theme === 'dark') {
+                    loginThemeIcon.className = 'fas fa-sun';
+                    loginThemeText.textContent = 'Modo Claro';
+                } else {
+                    loginThemeIcon.className = 'fas fa-moon';
+                    loginThemeText.textContent = 'Modo Oscuro';
+                }
+            }
+        }
+        
+        // Animación de entrada para los campos del formulario
+        const formElements = document.querySelectorAll('.form-floating');
+        formElements.forEach((element, index) => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                element.style.transition = 'all 0.5s ease';
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            }, 200 + (index * 100));
+        });
+        
+        // Efecto de focus en los inputs
+        const inputs = document.querySelectorAll('.form-control');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    });
+</script>
 {% endblock %}

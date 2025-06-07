@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,42 +10,283 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Variables CSS para temas */
+        :root {
+            --sidebar-bg: #f8f9fa;
+            --sidebar-border: #dee2e6;
+            --nav-link-color: #333;
+            --nav-link-hover-bg: #e9ecef;
+            --nav-active-bg: #e9ecef;
+            --card-bg: #ffffff;
+            --card-border: #dee2e6;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+        }
+
+        [data-bs-theme="dark"] {
+            --sidebar-bg: #343a40;
+            --sidebar-border: #495057;
+            --nav-link-color: #adb5bd;
+            --nav-link-hover-bg: #495057;
+            --nav-active-bg: #495057;
+            --card-bg: #343a40;
+            --card-border: #495057;
+            --text-primary: #ffffff;
+            --text-secondary: #adb5bd;
+            --bs-body-bg: #212529;
+            --bs-body-color: #fff;
+        }
+
+        /* Estilos base */
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
         .sidebar {
             min-height: calc(100vh - 56px);
-            background-color: #f8f9fa;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            transition: all 0.3s ease;
         }
+
         .content {
             padding: 20px;
+            transition: all 0.3s ease;
         }
+
         .nav-link {
-            color: #333;
+            color: var(--nav-link-color);
+            transition: all 0.3s ease;
+            border-radius: 0.375rem;
+            margin-bottom: 0.25rem;
         }
+
         .nav-link:hover {
-            background-color: #e9ecef;
+            background-color: var(--nav-link-hover-bg);
+            color: var(--text-primary);
+            transform: translateX(5px);
         }
-        .active {
-            background-color: #e9ecef;
+
+        .nav-link.active {
+            background-color: var(--nav-active-bg);
+            color: var(--text-primary);
             font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+
+        /* Estilos para cards */
+        .card {
+            background-color: var(--card-bg);
+            border-color: var(--card-border);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        [data-bs-theme="dark"] .card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .card-title {
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .card-text {
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        /* Estilos para alertas en modo oscuro */
+        [data-bs-theme="dark"] .alert-success {
+            background-color: #0f5132;
+            border-color: #0a3622;
+            color: #75b798;
+        }
+
+        [data-bs-theme="dark"] .alert-danger {
+            background-color: #58151c;
+            border-color: #842029;
+            color: #ea868f;
+        }
+
+        [data-bs-theme="dark"] .alert-warning {
+            background-color: #664d03;
+            border-color: #997404;
+            color: #ffda6a;
+        }
+
+        [data-bs-theme="dark"] .alert-info {
+            background-color: #055160;
+            border-color: #087990;
+            color: #6edff6;
+        }
+
+        /* Estilos para formularios en modo oscuro */
+        [data-bs-theme="dark"] .form-control {
+            background-color: #495057;
+            border-color: #6c757d;
+            color: #fff;
+        }
+
+        [data-bs-theme="dark"] .form-control:focus {
+            background-color: #495057;
+            border-color: #86b7fe;
+            color: #fff;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        [data-bs-theme="dark"] .form-label {
+            color: #fff;
+        }
+
+        [data-bs-theme="dark"] .form-select {
+            background-color: #495057;
+            border-color: #6c757d;
+            color: #fff;
+        }
+
+        /* Dropdown en modo oscuro */
+        [data-bs-theme="dark"] .dropdown-menu {
+            background-color: #343a40;
+            border-color: #495057;
+        }
+
+        [data-bs-theme="dark"] .dropdown-item {
+            color: #adb5bd;
+        }
+
+        [data-bs-theme="dark"] .dropdown-item:hover {
+            background-color: #495057;
+            color: #fff;
+        }
+
+        /* Toggle de tema */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-right: 1rem;
+        }
+
+        .theme-toggle .form-check {
+            margin: 0;
+        }
+
+        .theme-toggle .form-check-input {
+            cursor: pointer;
+        }
+
+        .theme-toggle .form-check-label {
+            cursor: pointer;
+            color: white;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .theme-icon {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        /* Iconos en cards */
+        .card-body i {
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .card-body i {
+            transform: scale(1.1);
+        }
+
+        /* Botones */
+        .btn {
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .theme-toggle {
+                margin-right: 0;
+                margin-bottom: 0.5rem;
+            }
+            
+            .sidebar {
+                min-height: auto;
+            }
+            
+            .nav-link:hover {
+                transform: none;
+            }
+        }
+
+        /* Animaciones de entrada */
+        .card {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Delay para animaciones escalonadas */
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
+        .card:nth-child(6) { animation-delay: 0.6s; }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">Librería "El gran Poeta"</a>
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="fas fa-book-open"></i> Librería "El gran Poeta"
+            </a>
             {% if user.is_authenticated %}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <!-- Toggle de tema -->
+                    <li class="nav-item">
+                        <div class="theme-toggle">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                                <label class="form-check-label" for="darkModeToggle">
+                                    <i class="fas fa-moon theme-icon" id="themeIcon"></i>
+                                </label>
+                            </div>
+                        </div>
+                    </li>
+                    <!-- Dropdown del usuario -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user"></i> {{ user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                            </a></li>
                         </ul>
                     </li>
                 </ul>
@@ -75,11 +316,54 @@
                         {% endif %}
                         
                         {% if user.perfil.rol == 'jefe_bodega' %}
-                        
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/productos/' in request.path %}active{% endif %}" href="{% url 'listar_productos' %}">
+                                <i class="fas fa-book"></i> Productos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/bodegas/' in request.path %}active{% endif %}" href="{% url 'listar_bodegas' %}">
+                                <i class="fas fa-warehouse"></i> Bodegas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/editoriales/' in request.path %}active{% endif %}" href="{% url 'listar_editoriales' %}">
+                                <i class="fas fa-building"></i> Editoriales
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/autores/' in request.path %}active{% endif %}" href="{% url 'listar_autores' %}">
+                                <i class="fas fa-pen-fancy"></i> Autores
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/movimientos/' in request.path %}active{% endif %}" href="{% url 'listar_movimientos' %}">
+                                <i class="fas fa-exchange-alt"></i> Movimientos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/informes/' in request.path %}active{% endif %}" href="#">
+                                <i class="fas fa-chart-bar"></i> Informes
+                            </a>
+                        </li>
                         {% endif %}
                         
                         {% if user.perfil.rol == 'bodeguero' %}
-                        
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/movimientos/' in request.path %}active{% endif %}" href="{% url 'listar_movimientos' %}">
+                                <i class="fas fa-exchange-alt"></i> Movimientos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/productos/' in request.path %}active{% endif %}" href="{% url 'listar_productos' %}">
+                                <i class="fas fa-book"></i> Productos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if '/bodegas/' in request.path %}active{% endif %}" href="{% url 'listar_bodegas' %}">
+                                <i class="fas fa-warehouse"></i> Bodegas
+                            </a>
+                        </li>
                         {% endif %}
                     </ul>
                 </div>
@@ -92,8 +376,9 @@
                     {% if messages %}
                     <div class="messages">
                         {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">
-                            {{ message }}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            <i class="fas fa-info-circle"></i> {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                         {% endfor %}
                     </div>
@@ -109,6 +394,118 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Script para el modo oscuro -->
+    <script>
+        // Función para inicializar el toggle de tema
+        function initThemeToggle() {
+            const html = document.documentElement;
+            const toggle = document.getElementById('darkModeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (!toggle || !themeIcon) return;
+            
+            // Cargar tema guardado o detectar preferencia del sistema
+            let savedTheme = localStorage.getItem('libreria-theme');
+            
+            // Si no hay tema guardado, detectar preferencia del sistema
+            if (!savedTheme) {
+                savedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            
+            html.setAttribute('data-bs-theme', savedTheme);
+            toggle.checked = savedTheme === 'dark';
+            updateThemeIcon(savedTheme);
+            
+            // Event listener para el cambio de tema
+            toggle.addEventListener('change', function() {
+                const newTheme = this.checked ? 'dark' : 'light';
+                html.setAttribute('data-bs-theme', newTheme);
+                localStorage.setItem('libreria-theme', newTheme);
+                updateThemeIcon(newTheme);
+                
+                // Animación del icono
+                themeIcon.style.transform = 'rotate(360deg)';
+                setTimeout(() => {
+                    themeIcon.style.transform = 'rotate(0deg)';
+                }, 300);
+                
+                // Efecto de ondas
+                createRippleEffect();
+            });
+            
+            function updateThemeIcon(theme) {
+                if (theme === 'dark') {
+                    themeIcon.className = 'fas fa-sun theme-icon';
+                    themeIcon.title = 'Cambiar a modo claro';
+                } else {
+                    themeIcon.className = 'fas fa-moon theme-icon';
+                    themeIcon.title = 'Cambiar a modo oscuro';
+                }
+            }
+            
+            function createRippleEffect() {
+                const ripple = document.createElement('div');
+                ripple.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    width: 20px;
+                    height: 20px;
+                    background: rgba(13, 110, 253, 0.3);
+                    border-radius: 50%;
+                    transform: translate(-50%, -50%);
+                    animation: ripple 0.6s ease-out;
+                    pointer-events: none;
+                    z-index: 9999;
+                `;
+                
+                document.body.appendChild(ripple);
+                
+                setTimeout(() => {
+                    document.body.removeChild(ripple);
+                }, 600);
+            }
+            
+            // CSS para la animación de ondas
+            if (!document.getElementById('ripple-styles')) {
+                const style = document.createElement('style');
+                style.id = 'ripple-styles';
+                style.textContent = `
+                    @keyframes ripple {
+                        to {
+                            width: 200px;
+                            height: 200px;
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+        
+        // Detectar cambios en la preferencia del sistema
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+            if (!localStorage.getItem('libreria-theme')) {
+                const newTheme = e.matches ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-bs-theme', newTheme);
+                const toggle = document.getElementById('darkModeToggle');
+                if (toggle) {
+                    toggle.checked = newTheme === 'dark';
+                }
+            }
+        });
+        
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', initThemeToggle);
+        
+        // También ejecutar inmediatamente para evitar flash
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initThemeToggle);
+        } else {
+            initThemeToggle();
+        }
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>

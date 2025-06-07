@@ -1,0 +1,88 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Crear Autor{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Crear Nuevo Autor</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Formulario de Autor</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.nombre.id_for_label }}" class="form-label">Nombre</label>
+                        {{ form.nombre }}
+                        {% if form.nombre.errors %}
+                        <div class="text-danger">
+                            {{ form.nombre.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.apellido.id_for_label }}" class="form-label">Apellido</label>
+                        {{ form.apellido }}
+                        {% if form.apellido.errors %}
+                        <div class="text-danger">
+                            {{ form.apellido.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.biografia.id_for_label }}" class="form-label">Biografía</label>
+                        {{ form.biografia }}
+                        {% if form.biografia.errors %}
+                        <div class="text-danger">
+                            {{ form.biografia.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'listar_autores' %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Información</h5>
+            </div>
+            <div class="card-body">
+                <p>Los autores son las personas que escriben los productos (libros, revistas, enciclopedias).</p>
+                <p>Cada autor debe tener un nombre y apellido para facilitar su identificación.</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> No se podrá eliminar un autor si tiene productos asociados.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Agregar clases de Bootstrap a los campos del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const formFields = document.querySelectorAll('input, textarea');
+        formFields.forEach(field => {
+            field.classList.add('form-control');
+        });
+    });
+</script>
+{% endblock %}

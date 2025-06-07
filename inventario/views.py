@@ -8,7 +8,6 @@ from django.forms import formset_factory
 from django.db.models import Sum, Count, Q
 from .models import *
 
-
 from .models import (
     Perfil, Editorial, Autor, Producto, Bodega, 
     InventarioBodega, Movimiento, DetalleMovimiento
@@ -17,14 +16,6 @@ from .models import (
 from .forms import (
     UsuarioForm,ProductoForm,MovimientoForm,BodegaForm,AutorForm,EditorialForm,InformeMovimientosForm,InformeProductosForm
 )
-
-
-
-
-# Create your views here.
-def inicio(request):
-    return render(request, 'inventario/login.html')
-
 
 #Para verificar roles de usuario
 def es_administrador(user):

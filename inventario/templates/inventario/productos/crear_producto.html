@@ -91,28 +91,6 @@
                         </div>
                     </div>
                     
-                    <div class="card mb-3">
-                        <div class="card-header bg-light">
-                            <h6 class="mb-0">Agregar nuevo autor</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="{{ form.nuevo_autor_nombre.id_for_label }}" class="form-label">Nombre</label>
-                                        {{ form.nuevo_autor_nombre }}
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="{{ form.nuevo_autor_apellido.id_for_label }}" class="form-label">Apellido</label>
-                                        {{ form.nuevo_autor_apellido }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <div class="d-flex justify-content-between">
                         <a href="{% url 'listar_productos' %}" class="btn btn-secondary">Cancelar</a>
                         <button type="submit" class="btn btn-primary">Guardar</button>

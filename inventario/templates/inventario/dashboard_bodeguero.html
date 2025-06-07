@@ -2,43 +2,267 @@
 
 {% block title %}Dashboard Bodeguero{% endblock %}
 
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    [data-bs-theme="dark"] .dashboard-header {
+        background: linear-gradient(135deg, #d63384 0%, #6f42c1 100%);
+    }
+
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+
+    .dashboard-header h1 {
+        margin: 0;
+        font-weight: 300;
+        position: relative;
+        z-index: 1;
+    }
+
+    .dashboard-header .subtitle {
+        opacity: 0.9;
+        margin-top: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .operation-card {
+        height: 100%;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: var(--card-bg);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        position: relative;
+    }
+
+    .operation-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, #fd7e14, #e83e8c);
+    }
+
+    .operation-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    [data-bs-theme="dark"] .operation-card:hover {
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .operation-card .card-body {
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .operation-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .operation-card:hover .operation-icon {
+        transform: scale(1.1) rotate(-5deg);
+    }
+
+    .operation-card .card-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .operation-card .card-text {
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .btn-operation {
+        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        margin: 0.25rem;
+        min-width: 140px;
+    }
+
+    .btn-operation:hover {
+        transform: translateY(-2px);
+    }
+
+    .daily-tasks {
+        background: rgba(253, 126, 20, 0.1);
+        border-left: 4px solid #fd7e14;
+        padding: 1.5rem;
+        border-radius: 0 10px 10px 0;
+        margin-bottom: 2rem;
+    }
+
+    [data-bs-theme="dark"] .daily-tasks {
+        background: rgba(253, 126, 20, 0.2);
+    }
+
+    .task-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+
+    [data-bs-theme="dark"] .task-item {
+        border-bottom-color: rgba(255,255,255,0.1);
+    }
+
+    .task-item:last-child {
+        border-bottom: none;
+    }
+
+    .task-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+        color: white;
+        margin-right: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .task-content {
+        flex: 1;
+    }
+
+    .task-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: var(--text-primary);
+    }
+
+    .task-description {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .priority-alert {
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(253, 126, 20, 0.1) 100%);
+        border: 2px solid #dc3545;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        animation: pulse 2s infinite;
+    }
+
+    [data-bs-theme="dark"] .priority-alert {
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.2) 0%, rgba(253, 126, 20, 0.2) 100%);
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+<div class="dashboard-header">
+    <h1><i class="fas fa-dolly"></i> Dashboard de Bodeguero</h1>
+    <p class="subtitle">Bienvenido, {{ user.username }}. Gestiona los movimientos y operaciones diarias.</p>
+</div>
+
 <div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">Dashboard de Bodeguero</h1>
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card operation-card">
+            <div class="card-body">
+                <div class="operation-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <h5 class="card-title">Movimientos de Productos</h5>
+                <p class="card-text">Realice y supervise los movimientos de productos entre diferentes bodegas.</p>
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a href="{% url 'crear_movimiento' %}" class="btn btn-success btn-operation">
+                        <i class="fas fa-plus"></i> Nuevo Movimiento
+                    </a>
+                    <a href="{% url 'listar_movimientos' %}" class="btn btn-primary btn-operation">
+                        <i class="fas fa-list"></i> Ver Movimientos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card operation-card">
+            <div class="card-body">
+                <div class="operation-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h5 class="card-title">Consulta de Productos</h5>
+                <p class="card-text">Visualice y consulte la información de todos los productos disponibles.</p>
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a href="{% url 'listar_productos' %}" class="btn btn-primary btn-operation">
+                        <i class="fas fa-search"></i> Buscar Productos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card operation-card">
+            <div class="card-body">
+                <div class="operation-icon">
+                    <i class="fas fa-warehouse"></i>
+                </div>
+                <h5 class="card-title">Estado de Bodegas</h5>
+                <p class="card-text">Consulte el estado actual y la capacidad de todas las bodegas.</p>
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a href="{% url 'listar_bodegas' %}" class="btn btn-info btn-operation">
+                        <i class="fas fa-eye"></i> Ver Bodegas
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
- <div class="row">
-    <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-exchange-alt"></i> Movimientos de Productos</h5>
-                <p class="card-text">Realice movimientos de productos entre bodegas.</p>
-                <a href="{% url 'crear_movimiento' %}" class="btn btn-success">Nuevo Movimiento</a>
-                <a href="{% url 'listar_movimientos' %}" class="btn btn-primary">Ver Movimientos</a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-book"></i> Productos</h5>
-                <p class="card-text">Visualice los productos disponibles.</p>
-                <a href="{% url 'listar_productos' %}" class="btn btn-primary">Ver Productos</a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-warehouse"></i> Bodegas</h5>
-                <p class="card-text">Visualice las bodegas disponibles.</p>
-                <a href="{% url 'listar_bodegas' %}" class="btn btn-primary">Ver Bodegas</a>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
