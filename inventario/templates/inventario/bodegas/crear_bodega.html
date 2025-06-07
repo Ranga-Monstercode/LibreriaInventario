@@ -1,0 +1,88 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Crear Bodega{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Crear Nueva Bodega</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Formulario de Bodega</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.nombre.id_for_label }}" class="form-label">Nombre</label>
+                        {{ form.nombre }}
+                        {% if form.nombre.errors %}
+                        <div class="text-danger">
+                            {{ form.nombre.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.ubicacion.id_for_label }}" class="form-label">Ubicación</label>
+                        {{ form.ubicacion }}
+                        {% if form.ubicacion.errors %}
+                        <div class="text-danger">
+                            {{ form.ubicacion.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.descripcion.id_for_label }}" class="form-label">Descripción</label>
+                        {{ form.descripcion }}
+                        {% if form.descripcion.errors %}
+                        <div class="text-danger">
+                            {{ form.descripcion.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'listar_bodegas' %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Información</h5>
+            </div>
+            <div class="card-body">
+                <p>Las bodegas son los lugares físicos donde se almacenan los productos.</p>
+                <p>Cada bodega debe tener un nombre único y una ubicación para facilitar su identificación.</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> No se podrá eliminar una bodega si contiene productos.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Agregar clases de Bootstrap a los campos del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const formFields = document.querySelectorAll('input, textarea');
+        formFields.forEach(field => {
+            field.classList.add('form-control');
+        });
+    });
+</script>
+{% endblock %}

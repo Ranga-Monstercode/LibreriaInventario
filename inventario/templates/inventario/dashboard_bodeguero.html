@@ -1,10 +1,44 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Hola Bodeguero</title>
-</head>
-<body>
-    <h1>Hola bodeguero</h1>
-</body>
-</html>
+{% extends 'inventario/base.html' %}
+
+{% block title %}Dashboard Bodeguero{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Dashboard de Bodeguero</h1>
+    </div>
+</div>
+
+ <div class="row">
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-exchange-alt"></i> Movimientos de Productos</h5>
+                <p class="card-text">Realice movimientos de productos entre bodegas.</p>
+                <a href="{% url 'crear_movimiento' %}" class="btn btn-success">Nuevo Movimiento</a>
+                <a href="{% url 'listar_movimientos' %}" class="btn btn-primary">Ver Movimientos</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-book"></i> Productos</h5>
+                <p class="card-text">Visualice los productos disponibles.</p>
+                <a href="{% url 'listar_productos' %}" class="btn btn-primary">Ver Productos</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-warehouse"></i> Bodegas</h5>
+                <p class="card-text">Visualice las bodegas disponibles.</p>
+                <a href="{% url 'listar_bodegas' %}" class="btn btn-primary">Ver Bodegas</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
