@@ -1,0 +1,39 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Dashboard Administrador{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/dashboard_admin.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1><i class="fas fa-crown"></i> Dashboard de Administrador</h1>
+    <p class="subtitle">Bienvenido, {{ user.username }}. Gestiona tu librería desde aquí.</p>
+</div>
+
+<!-- Acciones principales -->
+<div class="row">
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card action-card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-users"></i> Gestión de Usuarios
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Administre los usuarios del sistema, asigne roles y gestione permisos de acceso.</p>
+                <div class="d-flex flex-wrap">
+                    <a href="{% url 'listar_usuarios' %}" class="btn btn-primary btn-action">
+                        <i class="fas fa-list"></i> Ver Usuarios
+                    </a>
+                    <a href="{% url 'crear_usuario' %}" class="btn btn-success btn-action">
+                        <i class="fas fa-plus"></i> Crear Usuario
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

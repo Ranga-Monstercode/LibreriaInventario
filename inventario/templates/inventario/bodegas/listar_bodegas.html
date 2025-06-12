@@ -1,0 +1,93 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Bodegas{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/bodegas/listar_bodega.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-warehouse"></i> Gestión de Bodegas</h1>
+    {% if user.perfil.rol == 'jefe_bodega' %}
+    <a href="{% url 'crear_bodega' %}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Nueva Bodega
+    </a>
+    {% endif %}
+</div>
+
+<div class="card warehouses-card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Lista de Bodegas Registradas</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive table-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-tag"></i> Nombre</th>
+                        <th><i class="fas fa-map-marker-alt"></i> Ubicación</th>
+                        <th><i class="fas fa-align-left"></i> Descripción</th>
+                        <th class="text-center"><i class="fas fa-cogs"></i> Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bodega in bodegas %}
+                    <tr>
+                        <td>
+                            <div class="warehouse-name">
+                                <i class="fas fa-warehouse"></i>
+                                {{ bodega.nombre }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="warehouse-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ bodega.ubicacion }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="warehouse-description">
+                                {{ bodega.descripcion|default:"Sin descripción disponible" }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button type="button" class="action-btn btn-edit" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="action-btn btn-delete" title="Eliminar" 
+                                        onclick="confirmDelete('{{ editorial.nombre }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="p-0">
+                            <div class="empty-state">
+                                <i class="fas fa-warehouse"></i>
+                                <h4>No hay bodegas registradas</h4>
+                                <p>Comience creando espacios de almacenamiento para sus productos</p>
+                                {% if user.perfil.rol == 'jefe_bodega' %}
+                                <a href="{% url 'crear_bodega' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Crear Primera Bodega
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'css_js/bodegas/listar_bodega.js' %}"></script>
+{% endblock %}
+

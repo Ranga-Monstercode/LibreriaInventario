@@ -1,0 +1,94 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Autores{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/autores/listar_autor.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-pen-fancy"></i> Gestión de Autores</h1>
+    {% if user.perfil.rol == 'jefe_bodega' %}
+    <a href="{% url 'crear_autor' %}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Nuevo Autor
+    </a>
+    {% endif %}
+</div>
+
+<div class="card authors-card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Lista de Autores Registrados</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive table-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user"></i> Nombre</th>
+                        <th><i class="fas fa-user-tag"></i> Apellido</th>
+                        <th><i class="fas fa-book-open"></i> Biografía</th>
+                        <th class="text-center"><i class="fas fa-cogs"></i> Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for autor in autores %}
+                    <tr>
+                        <td>
+                            <div class="author-name">
+                                <i class="fas fa-feather-alt"></i>
+                                {{ autor.nombre }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="author-lastname">
+                                <i class="fas fa-signature"></i>
+                                {{ autor.apellido }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="author-biography truncated" 
+                                 title="{{ autor.biografia|default:'Sin biografía disponible' }}">
+                                {{ autor.biografia|default:"Sin biografía disponible"|truncatechars:100 }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                
+                                <button type="button" class="action-btn btn-edit" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="action-btn btn-delete" title="Eliminar" 
+                                        onclick="confirmDelete('{{ editorial.nombre }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="p-0">
+                            <div class="empty-state">
+                                <i class="fas fa-pen-fancy"></i>
+                                <h4>No hay autores registrados</h4>
+                                <p>Comience agregando escritores al catálogo de la librería</p>
+                                {% if user.perfil.rol == 'jefe_bodega' %}
+                                <a href="{% url 'crear_autor' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Crear Primer Autor
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'css_js/autores/listar_autor.js' %}"></script>
+{% endblock %}

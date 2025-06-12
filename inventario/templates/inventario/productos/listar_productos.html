@@ -1,0 +1,116 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Productos{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/productos/listar_producto.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-book"></i> Gestión de Productos</h1>
+    {% if user.perfil.rol == 'jefe_bodega' %}
+    <a href="{% url 'crear_producto' %}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Nuevo Producto
+    </a>
+    {% endif %}
+</div>
+
+<div class="card products-card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Lista de Productos Registrados</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive table-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-book-open"></i> Título</th>
+                        <th><i class="fas fa-tags"></i> Tipo</th>
+                        <th><i class="fas fa-building"></i> Editorial</th>
+                        <th><i class="fas fa-users"></i> Autores</th>
+                        <th><i class="fas fa-calendar"></i> Fecha de Creación</th>
+                        <th><i class="fas fa-warehouse"></i> Bodega</th>
+                        <th><i class="fas fa-sort-numeric-up"></i> Cantidad</th>
+                        <th class="text-center"><i class="fas fa-cogs"></i> Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                    <tr>  
+                        <td>
+                            <strong>{{ producto.titulo }}</strong>
+                        </td>
+                        <td>
+                            <span class="product-type-badge">
+                                {{ producto.get_tipo_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <i class="fas fa-building" style="color: #28a745;"></i>
+                            {{ producto.editorial.nombre }}
+                        </td>
+                        <td>
+                            <div class="authors-list" title="{% for autor in producto.autores.all %}{{ autor.nombre }} {{ autor.apellido }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                                {% for autor in producto.autores.all %}
+                                {{ autor.nombre }} {{ autor.apellido }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="date-display">
+                                {{ producto.fecha_creacion|date:"d/m/Y H:i" }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="warehouse-info">
+                                <i class="fas fa-warehouse"></i>
+                                {{ producto.bodega }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="quantity-badge {% if producto.cantidad >= 50 %}quantity-high{% elif producto.cantidad >= 20 %}quantity-medium{% else %}quantity-low{% endif %}">
+                                <i class="fas fa-boxes"></i>
+                                {{ producto.cantidad }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                
+                                <button type="button" class="action-btn btn-edit" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="action-btn btn-delete" title="Eliminar" 
+                                        onclick="confirmDelete('{{ editorial.nombre }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="p-0">
+                            <div class="empty-state">
+                                <i class="fas fa-book-open"></i>
+                                <h4>No hay productos registrados</h4>
+                                <p>Comience agregando productos al inventario de la librería</p>
+                                {% if user.perfil.rol == 'jefe_bodega' %}
+                                <a href="{% url 'crear_producto' %}" class="btn btn-success mt-3">
+                                    <i class="fas fa-plus"></i> Crear Primer Producto
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'css_js/productos/listar_producto.js' %}"></script>
+{% endblock %}
