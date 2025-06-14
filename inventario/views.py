@@ -1,12 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib import messages
 from django.db import transaction
-from django.http import HttpResponse
+from django.contrib.auth.forms import UserCreationForm
 from django.forms import formset_factory
-from django.db.models import Sum, Count, Q
+from django.db.models import Q
 from .models import *
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.models import User
 
 from .models import (
     Perfil, Editorial, Autor, Producto, Bodega, 
@@ -14,7 +17,8 @@ from .models import (
 )
 
 from .forms import (
-    UsuarioForm,ProductoForm,MovimientoForm,BodegaForm,AutorForm,EditorialForm,InformeMovimientosForm,InformeProductosForm
+    UsuarioForm,ProductoForm,MovimientoForm,BodegaForm,AutorForm,EditorialForm,
+    InformeMovimientosForm,InformeProductosForm,EditarUsuarioForm,CambiarPasswordForm
 )
 
 #Para verificar roles de usuario
@@ -425,3 +429,466 @@ def informe_movimientos(request):
         'form': form,
         'resultados': resultados
     })
+
+@login_required
+def editar_producto(request, pk):
+    producto = get_object_or_404(Producto, pk=pk)
+
+    if request.method == 'POST':
+        form = ProductoForm(request.POST, instance=producto)
+        if form.is_valid():
+            form.save()
+            return redirect('listar_productos')
+    else:
+        form = ProductoForm(instance=producto)
+
+    context = {
+        'form': form,
+        'producto': producto
+    }
+    return render(request, 'inventario/productos/editar_producto.html', context)
+
+
+
+@login_required
+def eliminar_producto(request, pk):
+    producto = get_object_or_404(Producto, pk=pk)
+    
+    if request.method == 'POST':
+        producto_titulo = producto.titulo
+        producto.delete()
+        
+        # Si es una petición AJAX, devolver JSON
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': f'Producto "{producto_titulo}" eliminado correctamente.'
+            })
+        else:
+            # Si es una petición normal, redirigir con mensaje
+            messages.success(request, 'Producto eliminado correctamente.')
+            return redirect('listar_productos')
+
+    return render(request, 'productos/confirmar_eliminar.html', {'producto': producto})
+
+
+
+@login_required
+def editar_editorial(request, pk):
+    editorial = get_object_or_404(Editorial, pk=pk)
+    
+    if request.method == 'POST':
+        form = EditorialForm(request.POST, instance=editorial)
+        if form.is_valid():
+            try:
+                editorial_actualizada = form.save()
+                messages.success(
+                    request, 
+                    f'La editorial "{editorial_actualizada.nombre}" ha sido actualizada correctamente.'
+                )
+                return redirect('listar_editoriales')
+            except Exception as e:
+                messages.error(
+                    request, 
+                    f'Error al actualizar la editorial: {str(e)}'
+                )
+        else:
+            messages.error(
+                request, 
+                'Por favor, corrija los errores en el formulario.'
+            )
+    else:
+        form = EditorialForm(instance=editorial)
+    
+    context = {
+        'form': form,
+        'editorial': editorial,
+        'titulo': f'Editar Editorial: {editorial.nombre}',
+        'accion': 'Actualizar'
+    }
+    
+    return render(request, 'inventario/editoriales/editar_editorial.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def eliminar_editorial(request, pk):
+
+    editorial = get_object_or_404(Editorial, pk=pk)
+    editorial_nombre = editorial.nombre
+    
+    try:
+        # Verificar si la editorial tiene productos asociados
+        productos_asociados = editorial.producto_set.count()
+        
+        if productos_asociados > 0:
+            mensaje_error = f'No se puede eliminar la editorial "{editorial_nombre}" porque tiene {productos_asociados} producto(s) asociado(s).'
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': mensaje_error
+                })
+            else:
+                messages.error(request, mensaje_error)
+                return redirect('listar_editoriales')
+        
+        # Eliminar la editorial
+        editorial.delete()
+        
+        mensaje_exito = f'La editorial "{editorial_nombre}" ha sido eliminada correctamente.'
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': mensaje_exito
+            })
+        else:
+            messages.success(request, mensaje_exito)
+            return redirect('listar_editoriales')
+            
+    except Exception as e:
+        mensaje_error = f'Error al eliminar la editorial: {str(e)}'
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': mensaje_error
+            })
+        else:
+            messages.error(request, mensaje_error)
+            return redirect('listar_editoriales')
+        
+
+@login_required
+def editar_autor(request, pk):
+    autor = get_object_or_404(Autor, pk=pk)
+    
+    if request.method == 'POST':
+        form = AutorForm(request.POST, instance=autor)
+        if form.is_valid():
+            try:
+                autor_actualizado = form.save()
+                messages.success(
+                    request, 
+                    f'El autor "{autor_actualizado.nombre} {autor_actualizado.apellido}" ha sido actualizado correctamente.'
+                )
+                return redirect('listar_autores')
+            except Exception as e:
+                messages.error(
+                    request, 
+                    f'Error al actualizar el autor: {str(e)}'
+                )
+        else:
+            messages.error(
+                request, 
+                'Por favor, corrija los errores en el formulario.'
+            )
+    else:
+        form = AutorForm(instance=autor)
+    
+    context = {
+        'form': form,
+        'autor': autor,
+        'titulo': f'Editar Autor: {autor.nombre} {autor.apellido}',
+        'accion': 'Actualizar'
+    }
+    
+    return render(request, 'inventario/autores/editar_autor.html', context)
+
+@login_required
+@require_http_methods(["POST"])
+def eliminar_autor(request, pk):
+    autor = get_object_or_404(Autor, pk=pk)
+    autor_nombre = f"{autor.nombre} {autor.apellido}"
+    
+    try:
+        # Verificar si el autor tiene productos asociados
+        productos_asociados = autor.producto_set.count()
+        
+        if productos_asociados > 0:
+            mensaje_error = f'No se puede eliminar el autor "{autor_nombre}" porque tiene {productos_asociados} producto(s) asociado(s).'
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': mensaje_error
+                })
+            else:
+                messages.error(request, mensaje_error)
+                return redirect('listar_autores')
+        
+        # Eliminar el autor
+        autor.delete()
+        
+        mensaje_exito = f'El autor "{autor_nombre}" ha sido eliminado correctamente.'
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': mensaje_exito
+            })
+        else:
+            messages.success(request, mensaje_exito)
+            return redirect('listar_autores')
+            
+    except Exception as e:
+        mensaje_error = f'Error al eliminar el autor: {str(e)}'
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': mensaje_error
+            })
+        else:
+            messages.error(request, mensaje_error)
+            return redirect('listar_autores')
+        
+
+@login_required
+def editar_bodega(request, pk):
+    bodega = get_object_or_404(Bodega, pk=pk)
+    
+    if request.method == 'POST':
+        form = BodegaForm(request.POST, instance=bodega)
+        if form.is_valid():
+            try:
+                bodega_actualizada = form.save()
+                messages.success(
+                    request, 
+                    f'La bodega "{bodega_actualizada.nombre}" ha sido actualizada correctamente.'
+                )
+                return redirect('listar_bodegas')
+            except Exception as e:
+                messages.error(
+                    request, 
+                    f'Error al actualizar la bodega: {str(e)}'
+                )
+        else:
+            messages.error(
+                request, 
+                'Por favor, corrija los errores en el formulario.'
+            )
+    else:
+        form = BodegaForm(instance=bodega)
+    
+    context = {
+        'form': form,
+        'bodega': bodega,
+        'titulo': f'Editar Bodega: {bodega.nombre}',
+        'accion': 'Actualizar'
+    }
+    
+    return render(request, 'inventario/bodegas/editar_bodega.html', context)
+
+@login_required
+def eliminar_bodega(request, pk):
+    bodega = get_object_or_404(Bodega, pk=pk)
+    
+    if request.method == 'POST':
+        bodega_nombre = bodega.nombre
+        
+        try:
+            # Verificar si la bodega tiene productos asociados
+            productos_asociados = bodega.producto_set.count()
+            
+            if productos_asociados > 0:
+                mensaje_error = f'No se puede eliminar la bodega "{bodega_nombre}" porque tiene {productos_asociados} producto(s) almacenado(s).'
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': mensaje_error
+                    })
+                else:
+                    messages.error(request, mensaje_error)
+                    return redirect('listar_bodegas')
+            
+            # Eliminar la bodega
+            bodega.delete()
+            
+            mensaje_exito = f'La bodega "{bodega_nombre}" ha sido eliminada correctamente.'
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': mensaje_exito
+                })
+            else:
+                messages.success(request, mensaje_exito)
+                return redirect('listar_bodegas')
+                
+        except Exception as e:
+            mensaje_error = f'Error al eliminar la bodega: {str(e)}'
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': mensaje_error
+                })
+            else:
+                messages.error(request, mensaje_error)
+                return redirect('listar_bodegas')
+    
+    # Si es GET, mostrar página de confirmación
+    return render(request, 'inventario/bodegas/confirmar_eliminar.html', {'bodega': bodega})
+
+@login_required
+def editar_usuario(request, pk):
+
+    perfil = get_object_or_404(Perfil, pk=pk)
+    usuario = perfil.usuario
+    
+    if request.method == 'POST':
+        form = EditarUsuarioForm(request.POST, instance=usuario, perfil=perfil)
+        
+        if form.is_valid():
+            try:
+                usuario_actualizado = form.save()
+                
+                messages.success(
+                    request, 
+                    f'El usuario "{usuario_actualizado.username}" ha sido actualizado correctamente.'
+                )
+                return redirect('listar_usuarios')
+            except Exception as e:
+                messages.error(
+                    request, 
+                    f'Error al actualizar el usuario: {str(e)}'
+                )
+        else:
+            messages.error(
+                request, 
+                'Por favor, corrija los errores en el formulario.'
+            )
+    else:
+        form = EditarUsuarioForm(instance=usuario, perfil=perfil)
+    
+    context = {
+        'form': form,
+        'perfil': perfil,
+        'usuario': usuario,
+        'titulo': f'Editar Usuario: {usuario.username}',
+        'accion': 'Actualizar'
+    }
+    
+    return render(request, 'inventario/usuarios/editar_usuario.html', context)
+
+@login_required
+def cambiar_password_usuario(request, pk):
+    perfil = get_object_or_404(Perfil, pk=pk)
+    usuario = perfil.usuario
+    
+    if request.method == 'POST':
+        form = CambiarPasswordForm(request.POST)
+        
+        if form.is_valid():
+            try:
+                nueva_password = form.cleaned_data['password1']
+                
+                # Establecer la contraseña SIN validaciones de Django
+                usuario.set_password(nueva_password)
+                usuario.save()
+                
+                # Si es el usuario actual, actualizar la sesión
+                if usuario == request.user:
+                    update_session_auth_hash(request, usuario)
+                    messages.success(
+                        request, 
+                        'Tu contraseña ha sido cambiada correctamente y tu sesión se mantiene activa.'
+                    )
+                else:
+                    messages.success(
+                        request, 
+                        f'La contraseña del usuario "{usuario.username}" ha sido cambiada correctamente.'
+                    )
+                
+                return redirect('listar_usuarios')
+                
+            except Exception as e:
+                messages.error(
+                    request, 
+                    f'Error al cambiar la contraseña: {str(e)}'
+                )
+        else:
+            messages.error(
+                request, 
+                'Por favor, corrija los errores en el formulario.'
+            )
+    else:
+        form = CambiarPasswordForm()
+    
+    context = {
+        'form': form,
+        'perfil': perfil,
+        'usuario': usuario,
+        'titulo': f'Cambiar Contraseña: {usuario.username}',
+        'es_propio_usuario': usuario == request.user
+    }
+    
+    return render(request, 'inventario/usuarios/cambiar_password.html', context)
+
+@login_required
+def eliminar_usuario(request, pk):
+    perfil = get_object_or_404(Perfil, pk=pk)
+    usuario = perfil.usuario
+    
+    # Evitar que el usuario se elimine a sí mismo
+    if usuario == request.user:
+        mensaje_error = 'No puedes eliminar tu propia cuenta.'
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': mensaje_error
+            })
+        else:
+            messages.error(request, mensaje_error)
+            return redirect('listar_usuarios')
+    
+    if request.method == 'POST':
+        usuario_username = usuario.username
+        
+        try:
+            # Verificar si es el último administrador
+            if perfil.rol == 'administrador':
+                admin_count = Perfil.objects.filter(rol='administrador').count()
+                if admin_count <= 1:
+                    mensaje_error = 'No se puede eliminar el último administrador del sistema.'
+                    
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({
+                            'success': False,
+                            'message': mensaje_error
+                        })
+                    else:
+                        messages.error(request, mensaje_error)
+                        return redirect('listar_usuarios')
+            
+            # Eliminar el usuario (esto también eliminará el perfil por CASCADE)
+            usuario.delete()
+            
+            mensaje_exito = f'El usuario "{usuario_username}" ha sido eliminado correctamente.'
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': mensaje_exito
+                })
+            else:
+                messages.success(request, mensaje_exito)
+                return redirect('listar_usuarios')
+                
+        except Exception as e:
+            mensaje_error = f'Error al eliminar el usuario: {str(e)}'
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': mensaje_error
+                })
+            else:
+                messages.error(request, mensaje_error)
+                return redirect('listar_usuarios')
+    
+    # Si es GET, redirigir a la lista
+    return redirect('listar_usuarios')

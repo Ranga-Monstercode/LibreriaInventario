@@ -152,8 +152,9 @@
     padding: 2rem;
 }
 
+/* ESPACIADO CORREGIDO PARA FORM-FLOATING */
 .form-floating {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem; /* Aumentado de 1.5rem a 2rem */
     position: relative;
 }
 
@@ -161,11 +162,21 @@
 .form-floating .form-select {
     border: 2px solid var(--border-color);
     border-radius: 12px;
-    padding: 1rem 0.75rem;
+    padding: 1.2rem 0.75rem 0.6rem 0.75rem; /* Ajustado el padding superior */
     height: auto;
+    min-height: 3.5rem; /* Altura mínima para evitar superposición */
     transition: all 0.3s ease;
     background: var(--input-bg);
     color: var(--text-primary);
+    font-size: 1rem;
+    line-height: 1.25;
+}
+
+/* ESPACIADO ESPECÍFICO PARA SELECT */
+.form-floating .form-select {
+    padding-top: 1.625rem; /* Más espacio superior para select */
+    padding-bottom: 0.625rem;
+    line-height: 1.25;
 }
 
 .form-floating .form-control:focus,
@@ -177,17 +188,44 @@
     color: var(--text-primary);
 }
 
+/* LABELS CORREGIDOS */
 .form-floating label {
     color: var(--text-secondary);
     font-weight: 500;
+    padding: 1rem 0.75rem;
+    pointer-events: none;
+    transform-origin: 0 0;
+    transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+}
+
+/* LABELS PARA SELECT - POSICIONAMIENTO ESPECÍFICO */
+.form-floating > .form-select ~ label,
+.form-floating > select ~ label {
+    padding: 1.2rem 0.75rem; /* Más padding superior */
+    transform: scale(0.85) translateY(-0.7rem) translateX(0.15rem); /* Más separación vertical */
 }
 
 .form-floating .form-control:focus ~ label,
-.form-floating .form-control:not(:placeholder-shown) ~ label,
-.form-floating .form-select:focus ~ label,
-.form-floating .form-select:not([value=""]) ~ label {
+.form-floating .form-control:not(:placeholder-shown) ~ label {
     color: #28a745;
-    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    transform: scale(0.85) translateY(-0.7rem) translateX(0.15rem);
+    opacity: 0.75;
+}
+
+.form-floating .form-select:focus ~ label,
+.form-floating .form-select:not([value=""]) ~ label,
+.form-floating select:focus ~ label,
+.form-floating select:not(:placeholder-shown) ~ label {
+    color: #28a745;
+    transform: scale(0.85) translateY(-0.8rem) translateX(0.15rem); /* Aún más separación para select */
+    opacity: 0.75;
+}
+
+/* TEXTAREA ESPECÍFICO */
+.form-floating textarea.form-control {
+    min-height: 100px;
+    padding-top: 1.625rem;
+    resize: vertical;
 }
 
 /* Estilos específicos para modo oscuro en formularios */
@@ -229,12 +267,13 @@
     color: var(--text-primary);
 }
 
+/* AUTHORS SECTION CON MEJOR ESPACIADO */
 .authors-section {
     background: var(--authors-bg);
     border: 2px dashed #28a745;
     border-radius: 15px;
     padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2.5rem; /* Aumentado el margen inferior */
     transition: all 0.3s ease;
 }
 
@@ -462,6 +501,11 @@
     .btn-action {
         width: 100%;
         margin-bottom: 0.5rem;
+    }
+    
+    /* Espaciado móvil reducido */
+    .form-floating {
+        margin-bottom: 1.5rem;
     }
 }
 
