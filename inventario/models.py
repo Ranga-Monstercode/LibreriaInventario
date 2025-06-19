@@ -83,8 +83,6 @@ class Producto(models.Model):
     titulo = models.CharField(max_length=200)
     tipo = models.CharField(max_length=20, choices=TIPOS)
     descripcion = models.TextField(blank=True, null=True)
-    cantidad=models.IntegerField()
-    bodega=models.ForeignKey(Bodega, on_delete=models.PROTECT)
     editorial = models.ForeignKey(Editorial, on_delete=models.PROTECT)
     autores = models.ManyToManyField(Autor)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
@@ -126,7 +124,10 @@ class DetalleMovimiento(models.Model):
     def __str__(self):
         return f"{self.producto.titulo}: {self.cantidad} unidades"
     
-
 class InventarioBodega(models.Model):
-    producto=models.ForeignKey(Producto, on_delete=models.PROTECT)
-    bodega=models.ForeignKey(Bodega, on_delete=models.PROTECT)
+    producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
+    bodega = models.ForeignKey(Bodega, on_delete=models.PROTECT)
+    cantidad = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('producto', 'bodega')  # evita duplicados

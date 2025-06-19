@@ -15,6 +15,10 @@
     </a>
 </div>
 
+{% if usuarios %}
+
+{% endif %}
+
 <div class="card users-card">
     <div class="card-header">
         <h5><i class="fas fa-list"></i> Lista de Usuarios Registrados</h5>
@@ -110,7 +114,6 @@
         </div>
     </div>
 </div>
-
 <!-- Modal de Confirmación para Eliminar -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -159,6 +162,7 @@
     </div>
 </div>
 {% endblock %}
+
 
 {% block extra_js %}
     <script src="{% static 'css_js/usuarios/listar_usuario.js' %}"></script>

@@ -82,7 +82,7 @@ color: white;
 }
 
 .page-header {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, #1e7e34 0%, #17a2b8 100%);
     color: white;
     border-radius: 15px;
     padding: 2rem;
@@ -157,7 +157,7 @@ color: white;
 }
 
 .products-card .card-header {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, #1e7e34 0%, #17a2b8 100%);
     color: white;
     border: none;
     padding: 1.5rem 2rem;
@@ -218,7 +218,7 @@ color: white;
     left: 0;
     width: 100%;
     height: 2px;
-    background: linear-gradient(90deg, #28a745, #20c997);
+    background: linear-gradient(135deg, #1e7e34 0%, #17a2b8 100%);
 }
 
 .table tbody tr {

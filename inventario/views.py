@@ -1,3 +1,4 @@
+from django import forms
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
@@ -10,6 +11,10 @@ from .models import *
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.models import User
+from django.forms import modelformset_factory
+from django.db.models import OuterRef, Exists
+import json
+
 
 from .models import (
     Perfil, Editorial, Autor, Producto, Bodega, 
@@ -18,7 +23,7 @@ from .models import (
 
 from .forms import (
     UsuarioForm,ProductoForm,MovimientoForm,BodegaForm,AutorForm,EditorialForm,
-    InformeMovimientosForm,InformeProductosForm,EditarUsuarioForm,CambiarPasswordForm
+    InformeMovimientosForm,InformeProductosForm,EditarUsuarioForm,CambiarPasswordForm,InventarioBodegaForm,DetalleMovimientoFormSet
 )
 
 #Para verificar roles de usuario
@@ -114,8 +119,6 @@ def listar_usuarios(request):
     usuarios = Perfil.objects.all()
     return render(request, 'inventario/usuarios/listar_usuarios.html', {'usuarios': usuarios})
 
-
-
 # Vistas de editoriales
 @login_required
 def crear_editorial(request):
@@ -176,18 +179,40 @@ def crear_producto(request):
     if not es_jefe_bodega(request.user):
         messages.error(request, 'No tiene permisos para crear productos')
         return redirect('dashboard')
-    
+
+    InventarioFormSet = modelformset_factory(
+    InventarioBodega,
+    form=InventarioBodegaForm,
+    extra=1,
+    can_delete=True,
+    fields=['bodega', 'cantidad'],  # este es obligatorio
+)
+
+
     if request.method == 'POST':
         form = ProductoForm(request.POST)
-        if form.is_valid():
-            form.save()
-            bodega = form.cleaned_data['bodega']
-            messages.success(request, 'Producto creado exitosamente')
+        formset = InventarioFormSet(request.POST, queryset=InventarioBodega.objects.none())
+
+        if form.is_valid() and formset.is_valid():
+            producto = form.save()
+
+            for inventario_form in formset:
+                if inventario_form.cleaned_data and not inventario_form.cleaned_data.get('DELETE', False):
+                    inventario = inventario_form.save(commit=False)
+                    inventario.producto = producto
+                    inventario.save()
+
+            messages.success(request, 'Producto creado y stock asignado exitosamente')
             return redirect('listar_productos')
+
     else:
         form = ProductoForm()
-    
-    return render(request, 'inventario/productos/crear_producto.html', {'form': form})
+        formset = InventarioFormSet(queryset=InventarioBodega.objects.none())
+
+    return render(request, 'inventario/productos/crear_producto.html', {
+        'form': form,
+        'formset': formset,
+    })
 
 @login_required
 def listar_productos(request):
@@ -228,95 +253,122 @@ def listar_bodegas(request):
 # Vistas de movimientos
 @login_required
 def crear_movimiento(request):
+    print("Ingreso a la vista crear_movimiento")
+    
     if not es_bodeguero(request.user):
+        print(f"Usuario {request.user} no tiene permisos de bodeguero")
         messages.error(request, 'No tiene permisos para crear movimientos')
         return redirect('dashboard')
     
-    DetalleFormSet = formset_factory(MovimientoForm, extra=1)
-    
     if request.method == 'POST':
+        print("Método POST recibido")
         form_movimiento = MovimientoForm(request.POST)
-        formset_detalles = DetalleFormSet(request.POST, prefix='detalles')
+        formset_detalles = DetalleMovimientoFormSet(request.POST, prefix='detalles')
+        
+        print(f"form_movimiento es válido? {form_movimiento.is_valid()}")
+        print(f"formset_detalles es válido? {formset_detalles.is_valid()}")
         
         if form_movimiento.is_valid() and formset_detalles.is_valid():
+            print("Ambos formularios válidos, comenzando transacción atómica")
             with transaction.atomic():
-                # Crear el movimiento
                 movimiento = form_movimiento.save(commit=False)
                 movimiento.usuario = request.user
                 movimiento.save()
+                print(f"Movimiento creado con ID: {movimiento.id}")
                 
-                # Procesar cada detalle
-                for form_detalle in formset_detalles:
-                    if form_detalle.cleaned_data:
-                        producto_id = form_detalle.cleaned_data.get('producto')
-                        cantidad = form_detalle.cleaned_data.get('cantidad')
+                for idx, form_detalle in enumerate(formset_detalles):
+                    print(f"Procesando detalle {idx + 1}")
+                    if form_detalle.cleaned_data and not form_detalle.cleaned_data.get('DELETE', False):
+                        producto = form_detalle.cleaned_data['producto']
+                        cantidad = form_detalle.cleaned_data['cantidad']
+                        print(f"Producto: {producto.titulo}, Cantidad: {cantidad}")
                         
-                        if producto_id and cantidad:
-                            producto = Producto.objects.get(id=producto_id)
+                        try:
+                            inventario_origen = InventarioBodega.objects.get(
+                                bodega=movimiento.bodega_origen,
+                                producto=producto
+                            )
+                            print(f"Stock en bodega origen: {inventario_origen.cantidad}")
                             
-                            # Verificar stock en bodega origen
-                            try:
-                                inventario_origen = InventarioBodega.objects.get(
-                                    bodega=movimiento.bodega_origen,
-                                    producto=producto
+                            if inventario_origen.cantidad < cantidad:
+                                print("Error: stock insuficiente")
+                                raise forms.ValidationError(
+                                    f"No hay suficiente stock de {producto.titulo} en la bodega de origen."
                                 )
-                                
-                                if inventario_origen.cantidad < cantidad:
-                                    raise ValidationError(f"No hay suficiente stock de {producto.titulo} en la bodega de origen.")
-                                
-                                # Restar de bodega origen
-                                inventario_origen.cantidad -= cantidad
-                                inventario_origen.save()
-                                
-                                # Si la cantidad llega a 0, eliminar el registro
-                                if inventario_origen.cantidad == 0:
-                                    inventario_origen.delete()
-                                
-                            except InventarioBodega.DoesNotExist:
-                                raise ValidationError(f"El producto {producto.titulo} no existe en la bodega de origen.")
                             
-                            # Agregar a bodega destino
-                            inventario_destino, created = InventarioBodega.objects.get_or_create(
-                                bodega=movimiento.bodega_destino,
-                                producto=producto,
-                                defaults={'cantidad': 0}
+                            inventario_origen.cantidad -= cantidad
+                            inventario_origen.save()
+                            print(f"Stock actualizado en bodega origen: {inventario_origen.cantidad}")
+                            
+                            if inventario_origen.cantidad == 0:
+                                inventario_origen.delete()
+                                print("Inventario eliminado por cantidad cero")
+                            
+                        except InventarioBodega.DoesNotExist:
+                            print("Error: producto no existe en la bodega origen")
+                            raise forms.ValidationError(
+                                f"El producto {producto.titulo} no existe en la bodega de origen."
                             )
-                            
-                            inventario_destino.cantidad += cantidad
-                            inventario_destino.save()
-                            
-                            # Crear detalle de movimiento
-                            DetalleMovimiento.objects.create(
-                                movimiento=movimiento,
-                                producto=producto,
-                                cantidad=cantidad
-                            )
+                        
+                        inventario_destino, created = InventarioBodega.objects.get_or_create(
+                            bodega=movimiento.bodega_destino,
+                            producto=producto,
+                            defaults={'cantidad': 0}
+                        )
+                        print(f"Stock actual en bodega destino antes de suma: {inventario_destino.cantidad}")
+                        inventario_destino.cantidad += cantidad
+                        inventario_destino.save()
+                        print(f"Stock actualizado en bodega destino: {inventario_destino.cantidad}")
+                        
+                        DetalleMovimiento.objects.create(
+                            movimiento=movimiento,
+                            producto=producto,
+                            cantidad=cantidad
+                        )
+                        print("DetalleMovimiento creado")
                 
                 messages.success(request, 'Movimiento creado exitosamente')
                 return redirect('detalle_movimiento', movimiento_id=movimiento.id)
+        else:
+            print("Errores en formulario movimiento o detalles:")
+            print(form_movimiento.errors)
+            print(formset_detalles.errors)
+            messages.error(request, 'Corrija los errores en el formulario.')
     else:
+        print("Método GET, mostrando formularios vacíos")
         form_movimiento = MovimientoForm()
-        formset_detalles = DetalleFormSet(prefix='detalles')
+        formset_detalles = DetalleMovimientoFormSet(prefix='detalles')
     
-    # Obtener productos disponibles por bodega
     bodegas = Bodega.objects.all()
     productos_por_bodega = {}
-    
+
     for bodega in bodegas:
         inventario = InventarioBodega.objects.filter(bodega=bodega)
         productos_por_bodega[bodega.id] = [
             {
                 'id': item.producto.id,
                 'nombre': item.producto.titulo,
-                'cantidad': item.producto.cantidad
+                'cantidad': item.cantidad
             }
             for item in inventario
         ]
     
+    # Productos sin ninguna bodega asignada (sin stock)
+    productos_sin_bodega = Producto.objects.annotate(
+        tiene_stock=Exists(InventarioBodega.objects.filter(producto=OuterRef('pk')))
+    ).filter(tiene_stock=False)
+
+    productos_por_bodega['sin_bodega'] = [
+        {'id': p.id, 'nombre': p.titulo, 'cantidad': 0}
+        for p in productos_sin_bodega
+    ]
+
+    print("Renderizando plantilla con context")
+
     return render(request, 'inventario/movimientos/crear_movimiento.html', {
         'form_movimiento': form_movimiento,
         'formset_detalles': formset_detalles,
-        'productos_por_bodega': productos_por_bodega
+        'productos_por_bodega': json.dumps(productos_por_bodega),  # serializado a JSON para JS
     })
 
 @login_required
@@ -448,8 +500,6 @@ def editar_producto(request, pk):
     }
     return render(request, 'inventario/productos/editar_producto.html', context)
 
-
-
 @login_required
 def eliminar_producto(request, pk):
     producto = get_object_or_404(Producto, pk=pk)
@@ -470,8 +520,6 @@ def eliminar_producto(request, pk):
             return redirect('listar_productos')
 
     return render(request, 'productos/confirmar_eliminar.html', {'producto': producto})
-
-
 
 @login_required
 def editar_editorial(request, pk):
@@ -508,7 +556,6 @@ def editar_editorial(request, pk):
     }
     
     return render(request, 'inventario/editoriales/editar_editorial.html', context)
-
 
 @login_required
 @require_http_methods(["POST"])

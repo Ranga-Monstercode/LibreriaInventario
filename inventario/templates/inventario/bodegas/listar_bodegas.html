@@ -48,9 +48,8 @@
                             </div>
                         </td>
                         <td>
-                            <div class="warehouse-description truncated" 
-                                 title="{{ bodega.descripcion|default:'Sin descripción disponible' }}">
-                                {{ bodega.descripcion|default:"Sin descripción disponible"|truncatechars:80 }}
+                            <div class="warehouse-description">
+                                {{ bodega.descripcion|default:"Sin descripción disponible" }}
                             </div>
                         </td>
                         <td>
@@ -95,8 +94,6 @@
         </div>
     </div>
 </div>
-
-<!-- Modal de Confirmación para Eliminar -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -135,6 +132,7 @@
     </div>
 </div>
 {% endblock %}
+
 
 {% block extra_js %}
     <script src="{% static 'css_js/bodegas/listar_bodega.js' %}"></script>
@@ -245,3 +243,4 @@
         }
     </script>
 {% endblock %}
+

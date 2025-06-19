@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .models import Perfil, Editorial, Autor, Producto, Bodega, Movimiento, DetalleMovimiento,InventarioBodega
+from django.forms import formset_factory, BaseFormSet
 
 class UsuarioForm(UserCreationForm):
     ROL_CHOICES = [
@@ -71,11 +72,11 @@ class UsuarioForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Personalizar mensajes de ayuda para las contraseñas
-        self.fields['password1'].help_text = 'Su contraseña debe tener al menos 8 caracteres y no puede ser muy común.'
+        #self.fields['password1'].help_text = 'Su contraseña debe tener al menos 8 caracteres y no puede ser muy común.'
         self.fields['password2'].help_text = 'Ingrese la misma contraseña para verificación.'
         
         # Hacer email obligatorio
-        self.fields['email'].required = True
+        #self.fields['email'].required = True
         
         # Agregar clases CSS a los campos de contraseña
         self.fields['password1'].widget.attrs.update({'class': 'form-control'})
@@ -231,8 +232,6 @@ class EditarUsuarioForm(forms.ModelForm):
             self.perfil.rol = self.cleaned_data['rol']
             self.perfil.save()
         return user
-    
-from django import forms
 
 class CambiarPasswordForm(forms.Form):
     """Formulario para cambiar contraseña de usuario SIN RESTRICCIONES"""
@@ -377,19 +376,10 @@ class ProductoForm(forms.ModelForm):
         required=False
     )
 
-    bodega = forms.ModelChoiceField(
-        queryset=Bodega.objects.all(),
-        required=False,
-        label='Bodega',
-        widget=forms.Select(attrs={'class': 'form-control'})
-    )
-
-    nuevo_autor_nombre = forms.CharField(required=False, label="Nombre del nuevo autor")
-    nuevo_autor_apellido = forms.CharField(required=False, label="Apellido del nuevo autor")
-    
     class Meta:
         model = Producto
-        fields = ['titulo', 'tipo', 'descripcion', 'editorial', 'autores','bodega','cantidad']
+        # quitamos 'bodega' y 'cantidad' porque ya no están en Producto o no deben estar para manejar stock separado
+        fields = ['titulo', 'tipo', 'descripcion', 'editorial', 'autores']
         widgets = {
             'descripcion': forms.Textarea(attrs={'rows': 3}),
         }
@@ -420,7 +410,7 @@ class ProductoForm(forms.ModelForm):
                 producto.autores.add(nuevo_autor)
         
         return producto
-
+    
 class BodegaForm(forms.ModelForm):
     class Meta:
         model = Bodega
@@ -520,7 +510,11 @@ class MovimientoForm(forms.ModelForm):
         
         return cleaned_data
 
-class DetalleMovimientoFormSet(forms.BaseFormSet):
+class DetalleMovimientoForm(forms.Form):
+    producto = forms.ModelChoiceField(queryset=Producto.objects.all(), label="Producto")
+    cantidad = forms.IntegerField(min_value=1, label="Cantidad")
+
+class BaseDetalleMovimientoFormSet(BaseFormSet):
     def clean(self):
         if any(self.errors):
             return
@@ -548,9 +542,9 @@ class DetalleMovimientoFormSet(forms.BaseFormSet):
                 "Debe incluir al menos un producto en el movimiento."
             )
 
-DetalleMovimientoFormSet = forms.formset_factory(
-    forms.Form,
-    formset=DetalleMovimientoFormSet,
+DetalleMovimientoFormSet = formset_factory(
+    DetalleMovimientoForm,
+    formset=BaseDetalleMovimientoFormSet,
     extra=1,
     can_delete=True
 )
@@ -583,11 +577,10 @@ class InformeMovimientosForm(forms.Form):
     bodega_origen = forms.ModelChoiceField(queryset=Bodega.objects.all(), required=False)
     bodega_destino = forms.ModelChoiceField(queryset=Bodega.objects.all(), required=False)
 
-class InventarioBodega(forms.ModelForm):
+class InventarioBodegaForm(forms.ModelForm):
     class Meta:
         model = InventarioBodega
         fields = ['producto','bodega']
-
 
 class EditorialForm(forms.ModelForm):
     class Meta:
@@ -654,5 +647,3 @@ class EditorialForm(forms.ModelForm):
                     'La descripción no puede exceder los 500 caracteres.'
                 )
         return descripcion
-    
-

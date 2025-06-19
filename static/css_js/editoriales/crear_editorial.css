@@ -38,7 +38,7 @@
 }
 
 .page-header {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, #1e7e34 0%, #17a2b8 100%);
     color: white;
     border-radius: 15px;
     padding: 2rem;
@@ -90,7 +90,7 @@
 }
 
 .form-card .card-header {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, #1e7e34 0%, #17a2b8 100%);;
     color: white;
     border: none;
     padding: 1.5rem 2rem;
@@ -138,7 +138,7 @@
 }
 
 .info-card .card-header {
-    background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+    background: linear-gradient(135deg, #1e7e34 0%, #17a2b8 100%);
     color: white;
     border: none;
     padding: 1.5rem 2rem;
@@ -289,7 +289,7 @@
 }
 
 .btn-primary.btn-action {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, #1e7e34 0%, #17a2b8 100%);
     border: none;
     color: white;
 }

@@ -82,7 +82,7 @@ color: white;
 }
 
 .page-header {
-    background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
     color: white;
     border-radius: 15px;
     padding: 2rem;
@@ -157,7 +157,7 @@ color: white;
 }
 
 .users-card .card-header {
-    background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
     color: white;
     border: none;
     padding: 1.5rem 2rem;
@@ -218,7 +218,7 @@ color: white;
     left: 0;
     width: 100%;
     height: 2px;
-    background: linear-gradient(90deg, #007bff, #6610f2);
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
 }
 
 .table tbody tr {
@@ -363,7 +363,7 @@ color: white;
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(90deg, #007bff, #6610f2);
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
 }
 
 .stat-card:hover {

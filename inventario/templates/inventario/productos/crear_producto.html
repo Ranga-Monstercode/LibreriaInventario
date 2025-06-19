@@ -70,30 +70,6 @@
                         </div>
                         {% endif %}
                     </div>
-                    
-                    <div class="form-floating">
-                        {{ form.bodega }}
-                        <label for="{{ form.bodega.id_for_label }}">
-                            <i class="fas fa-warehouse"></i> Bodega de Almacenamiento
-                        </label>
-                        {% if form.bodega.errors %}
-                        <div class="error-message">
-                            {{ form.bodega.errors }}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="form-floating">
-                        {{ form.cantidad }}
-                        <label for="{{ form.cantidad.id_for_label }}">
-                            <i class="fas fa-sort-numeric-up"></i> Cantidad en Stock
-                        </label>
-                        {% if form.cantidad.errors %}
-                        <div class="error-message">
-                            {{ form.cantidad.errors }}
-                        </div>
-                        {% endif %}
-                    </div>
 
                     <div class="authors-section">
                         <label class="form-label">
@@ -105,6 +81,53 @@
                             {{ form.autores.errors }}
                         </div>
                         {% endif %}
+                    </div>
+
+                    <!-- Sección de asignación de stock en bodegas -->
+                    <div class="stock-section mt-4">
+                        <h4 class="section-title">
+                            <i class="fas fa-warehouse"></i> Asignar Stock en Bodegas
+                        </h4>
+                        <p class="text-muted mb-3">Defina la cantidad de productos que se almacenarán en cada bodega</p>
+                        
+                        {{ formset.management_form }}
+                        
+                        <div class="formset-container">
+                            {% for f in formset %}
+                            <div class="stock-item card mb-3">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                {{ f.bodega }}
+                                                <label for="{{ f.bodega.id_for_label }}">
+                                                    <i class="fas fa-warehouse"></i> {{ f.bodega.label }}
+                                                </label>
+                                                {% if f.bodega.errors %}
+                                                <div class="error-message">
+                                                    {{ f.bodega.errors }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                {{ f.cantidad }}
+                                                <label for="{{ f.cantidad.id_for_label }}">
+                                                    <i class="fas fa-sort-numeric-up"></i> {{ f.cantidad.label }}
+                                                </label>
+                                                {% if f.cantidad.errors %}
+                                                <div class="error-message">
+                                                    {{ f.cantidad.errors }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                     
                     <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mt-4">
@@ -148,7 +171,7 @@
                         <strong>Editorial:</strong> Debe seleccionar una editorial registrada en el sistema.
                     </p>
                     <p class="small text-muted">
-                        <strong>Cantidad:</strong> Ingrese la cantidad inicial que se almacenará en la bodega seleccionada.
+                        <strong>Stock en Bodegas:</strong> Puede asignar diferentes cantidades del producto a múltiples bodegas según sus necesidades de almacenamiento.
                     </p>
                 </div>
                 

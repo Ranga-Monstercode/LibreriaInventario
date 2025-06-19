@@ -71,30 +71,6 @@
                         {% endif %}
                     </div>
                     
-                    <div class="form-floating mb-3">
-                        {{ form.bodega }}
-                        <label for="{{ form.bodega.id_for_label }}">
-                            <i class="fas fa-warehouse"></i> Bodega de Almacenamiento
-                        </label>
-                        {% if form.bodega.errors %}
-                        <div class="error-message">
-                            {{ form.bodega.errors }}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="form-floating mb-3">
-                        {{ form.cantidad }}
-                        <label for="{{ form.cantidad.id_for_label }}">
-                            <i class="fas fa-sort-numeric-up"></i> Cantidad en Stock
-                        </label>
-                        {% if form.cantidad.errors %}
-                        <div class="error-message">
-                            {{ form.cantidad.errors }}
-                        </div>
-                        {% endif %}
-                    </div>
-
                     <div class="authors-section mb-4">
                         <label class="form-label">
                             <i class="fas fa-users"></i> Seleccionar Autores
@@ -107,6 +83,53 @@
                         {% endif %}
                     </div>
                     
+                    <!-- Sección de asignación de stock en bodegas -->
+                    <div class="stock-section mt-4">
+                        <h4 class="section-title">
+                            <i class="fas fa-warehouse"></i> Asignar Stock en Bodegas
+                        </h4>
+                        <p class="text-muted mb-3">Defina la cantidad de productos que se almacenarán en cada bodega</p>
+                        
+                        {{ formset.management_form }}
+                        
+                        <div class="formset-container">
+                            {% for f in formset %}
+                            <div class="stock-item card mb-3">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                {{ f.bodega }}
+                                                <label for="{{ f.bodega.id_for_label }}">
+                                                    <i class="fas fa-warehouse"></i> {{ f.bodega.label }}
+                                                </label>
+                                                {% if f.bodega.errors %}
+                                                <div class="error-message">
+                                                    {{ f.bodega.errors }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                {{ f.cantidad }}
+                                                <label for="{{ f.cantidad.id_for_label }}">
+                                                    <i class="fas fa-sort-numeric-up"></i> {{ f.cantidad.label }}
+                                                </label>
+                                                {% if f.cantidad.errors %}
+                                                <div class="error-message">
+                                                    {{ f.cantidad.errors }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
                     <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mt-4">
                         <a href="{% url 'listar_productos' %}" class="btn btn-secondary btn-action">
                             <i class="fas fa-arrow-left"></i> Cancelar

@@ -49,8 +49,6 @@ urlpatterns = [
     path('informes/productos/', views.informe_productos, name='informe_productos'),
     path('informes/movimientos/', views.informe_movimientos, name='informe_movimientos'),
     
-    
-
     # Ruta principal
     path('', views.login_view, name='index'),
 ]
