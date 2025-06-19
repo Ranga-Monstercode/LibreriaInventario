@@ -1,0 +1,371 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css_js/usuarios/crear_usuario.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-user-edit"></i> {{ titulo }}</h1>
+    <p class="subtitle">Modifique la información del usuario en el sistema</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card form-card">
+            <div class="card-header">
+                <h5><i class="fas fa-user"></i> Información del Usuario</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="form-floating mb-3">
+                        {{ form.username }}
+                        <label for="{{ form.username.id_for_label }}">
+                            <i class="fas fa-user"></i> {{ form.username.label }}
+                        </label>
+                        {% if form.username.errors %}
+                        <div class="error-message">
+                            {{ form.username.errors }}
+                        </div>
+                        {% endif %}
+                        {% if form.username.help_text %}
+                        <div class="form-text">{{ form.username.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                {{ form.first_name }}
+                                <label for="{{ form.first_name.id_for_label }}">
+                                    <i class="fas fa-id-card"></i> {{ form.first_name.label }}
+                                </label>
+                                {% if form.first_name.errors %}
+                                <div class="error-message">
+                                    {{ form.first_name.errors }}
+                                </div>
+                                {% endif %}
+                                {% if form.first_name.help_text %}
+                                <div class="form-text">{{ form.first_name.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                {{ form.last_name }}
+                                <label for="{{ form.last_name.id_for_label }}">
+                                    <i class="fas fa-id-card"></i> {{ form.last_name.label }}
+                                </label>
+                                {% if form.last_name.errors %}
+                                <div class="error-message">
+                                    {{ form.last_name.errors }}
+                                </div>
+                                {% endif %}
+                                {% if form.last_name.help_text %}
+                                <div class="form-text">{{ form.last_name.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-floating mb-3">
+                        {{ form.email }}
+                        <label for="{{ form.email.id_for_label }}">
+                            <i class="fas fa-envelope"></i> {{ form.email.label }}
+                        </label>
+                        {% if form.email.errors %}
+                        <div class="error-message">
+                            {{ form.email.errors }}
+                        </div>
+                        {% endif %}
+                        {% if form.email.help_text %}
+                        <div class="form-text">{{ form.email.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-floating mb-4">
+                        {{ form.rol }}
+                        <label for="{{ form.rol.id_for_label }}">
+                            <i class="fas fa-user-tag"></i> {{ form.rol.label }}
+                        </label>
+                        {% if form.rol.errors %}
+                        <div class="error-message">
+                            {{ form.rol.errors }}
+                        </div>
+                        {% endif %}
+                        {% if form.rol.help_text %}
+                        <div class="form-text">{{ form.rol.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mt-4">
+                        <a href="{% url 'listar_usuarios' %}" class="btn btn-secondary btn-action">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'cambiar_password_usuario' perfil.pk %}" class="btn btn-warning btn-action">
+                                <i class="fas fa-key"></i> Cambiar Contraseña
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-action">
+                                <i class="fas fa-save"></i> {{ accion }} Usuario
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card info-card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Información Actual</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="text-info mb-3">
+                        <i class="fas fa-user"></i> Datos del Usuario:
+                    </h6>
+                    <ul class="info-list">
+                        <li><strong>Usuario:</strong> {{ usuario.username }}</li>
+                        <li><strong>Nombre:</strong> {{ usuario.first_name|default:"Sin nombre" }}</li>
+                        <li><strong>Apellido:</strong> {{ usuario.last_name|default:"Sin apellido" }}</li>
+                        <li><strong>Email:</strong> {{ usuario.email|default:"Sin email" }}</li>
+                        <li><strong>Rol Actual:</strong> 
+                            <span class="role-badge role-{{ perfil.rol }}">
+                                {% if perfil.rol == 'administrador' %}
+                                    <i class="fas fa-crown"></i>
+                                {% elif perfil.rol == 'jefe_bodega' %}
+                                    <i class="fas fa-user-tie"></i>
+                                {% elif perfil.rol == 'bodeguero' %}
+                                    <i class="fas fa-dolly"></i>
+                                {% endif %}
+                                {{ perfil.get_rol_display }}
+                            </span>
+                        </li>
+                        {% if usuario.date_joined %}
+                        <li><strong>Registrado:</strong> {{ usuario.date_joined|date:"d/m/Y H:i" }}</li>
+                        {% endif %}
+                        {% if usuario.last_login %}
+                        <li><strong>Último acceso:</strong> {{ usuario.last_login|date:"d/m/Y H:i" }}</li>
+                        {% else %}
+                        <li><strong>Último acceso:</strong> <span class="text-muted">Nunca</span></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                <div class="mb-4">
+                    <h6 class="text-warning mb-3">
+                        <i class="fas fa-exclamation-triangle"></i> Importante:
+                    </h6>
+                    <p class="small text-muted">
+                        <strong>Cambio de Username:</strong> Al cambiar el nombre de usuario, el usuario deberá usar el nuevo nombre para iniciar sesión.
+                    </p>
+                    <p class="small text-muted">
+                        <strong>Cambio de Rol:</strong> Los cambios de rol afectan inmediatamente los permisos del usuario.
+                    </p>
+                    <p class="small text-muted">
+                        <strong>Email:</strong> Se recomienda mantener un email válido para recuperación de cuenta.
+                    </p>
+                    {% if perfil.rol == 'administrador' %}
+                    <div class="alert alert-warning small">
+                        <i class="fas fa-crown"></i>
+                        <strong>Usuario Administrador:</strong> Tenga cuidado al modificar usuarios con rol de administrador.
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4">
+                    <h6 class="text-success mb-3">
+                        <i class="fas fa-lightbulb"></i> Consejos Útiles:
+                    </h6>
+                    <p class="small text-muted">
+                        <strong>Username:</strong> Use nombres únicos y fáciles de recordar.
+                    </p>
+                    <p class="small text-muted">
+                        <strong>Nombre y Apellido:</strong> Facilitan la identificación del usuario.
+                    </p>
+                    <p class="small text-muted">
+                        <strong>Email:</strong> Importante para notificaciones y recuperación.
+                    </p>
+                </div>
+                
+                <div class="alert-custom">
+                    <i class="fas fa-shield-alt"></i>
+                    <strong>Estado de Cuenta:</strong><br>
+                    {% if usuario.is_active %}
+                        <span class="text-success">✓ Cuenta Activa</span>
+                    {% else %}
+                        <span class="text-danger">✗ Cuenta Inactiva</span>
+                    {% endif %}
+                </div>
+                
+                <div class="alert-custom">
+                    <i class="fas fa-key"></i>
+                    <strong>Contraseña:</strong><br>
+                    Para cambiar la contraseña, use el botón "Cambiar Contraseña" en el formulario.
+                </div>
+                
+                {% if usuario == request.user %}
+                <div class="alert-custom">
+                    <i class="fas fa-user-circle"></i>
+                    <strong>Cuenta Propia:</strong><br>
+                    Está editando su propia cuenta. Los cambios se aplicarán inmediatamente.
+                </div>
+                {% endif %}
+                
+                <div class="alert-custom">
+                    <i class="fas fa-history"></i>
+                    <strong>Actividad Reciente:</strong><br>
+                    {% if usuario.last_login %}
+                        Último acceso: {{ usuario.last_login|timesince }} atrás
+                    {% else %}
+                        Este usuario nunca ha iniciado sesión
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'css_js/usuarios/crear_usuario.js' %}"></script>
+<script>
+    // Validación en tiempo real
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameField = document.getElementById('{{ form.username.id_for_label }}');
+        const emailField = document.getElementById('{{ form.email.id_for_label }}');
+        const rolField = document.getElementById('{{ form.rol.id_for_label }}');
+        
+        // Validación de username
+        if (usernameField) {
+            usernameField.addEventListener('blur', function() {
+                const username = this.value.trim();
+                if (username && username !== '{{ usuario.username }}') {
+                    // Convertir a minúsculas
+                    this.value = username.toLowerCase();
+                    
+                    // Validación de longitud
+                    if (username.length < 3) {
+                        this.classList.add('is-invalid');
+                        showFieldError(this, 'El nombre de usuario debe tener al menos 3 caracteres.');
+                    } else {
+                        this.classList.remove('is-invalid');
+                        removeFieldError(this);
+                    }
+                }
+            });
+        }
+        
+        // Validación de email
+        if (emailField) {
+            emailField.addEventListener('blur', function() {
+                const email = this.value.trim();
+                if (email) {
+                    // Convertir a minúsculas
+                    this.value = email.toLowerCase();
+                    
+                    // Validación básica de email
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(email)) {
+                        this.classList.add('is-invalid');
+                        showFieldError(this, 'Ingrese un email válido.');
+                    } else {
+                        this.classList.remove('is-invalid');
+                        removeFieldError(this);
+                    }
+                }
+            });
+        }
+        
+        // Advertencia para cambio de rol de administrador
+        if (rolField) {
+            const originalRol = '{{ perfil.rol }}';
+            
+            rolField.addEventListener('change', function() {
+                const newRol = this.value;
+                
+                if (originalRol === 'administrador' && newRol !== 'administrador') {
+                    if (!confirm('¿Está seguro de quitar los privilegios de administrador a este usuario?\n\nEsta acción reducirá sus permisos en el sistema.')) {
+                        this.value = originalRol;
+                        return;
+                    }
+                }
+                
+                if (originalRol !== 'administrador' && newRol === 'administrador') {
+                    if (!confirm('¿Está seguro de otorgar privilegios de administrador a este usuario?\n\nEsto le dará acceso completo al sistema.')) {
+                        this.value = originalRol;
+                        return;
+                    }
+                }
+            });
+        }
+        
+        // Capitalizar nombres
+        const firstNameField = document.getElementById('{{ form.first_name.id_for_label }}');
+        const lastNameField = document.getElementById('{{ form.last_name.id_for_label }}');
+        
+        [firstNameField, lastNameField].forEach(field => {
+            if (field) {
+                field.addEventListener('blur', function() {
+                    if (this.value) {
+                        this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1).toLowerCase();
+                    }
+                });
+            }
+        });
+        
+        function showFieldError(field, message) {
+            removeFieldError(field);
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'validation-error text-danger small mt-1';
+            errorDiv.textContent = message;
+            field.parentNode.appendChild(errorDiv);
+        }
+        
+        function removeFieldError(field) {
+            const errorDiv = field.parentNode.querySelector('.validation-error');
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+        }
+    });
+    
+    // Confirmación antes de enviar si hay cambios importantes
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const originalUsername = '{{ usuario.username }}';
+        const originalRol = '{{ perfil.rol }}';
+        const newUsername = document.getElementById('{{ form.username.id_for_label }}').value;
+        const newRol = document.getElementById('{{ form.rol.id_for_label }}').value;
+        
+        let confirmMessage = '';
+        
+        if (originalUsername !== newUsername) {
+            confirmMessage += `• El nombre de usuario cambiará de "${originalUsername}" a "${newUsername}"\n`;
+        }
+        
+        if (originalRol !== newRol) {
+            const rolNames = {
+                'administrador': 'Administrador',
+                'jefe_bodega': 'Jefe de Bodega',
+                'bodeguero': 'Bodeguero'
+            };
+            confirmMessage += `• El rol cambiará de "${rolNames[originalRol]}" a "${rolNames[newRol]}"\n`;
+        }
+        
+        if (confirmMessage) {
+            confirmMessage = 'Se realizarán los siguientes cambios:\n\n' + confirmMessage + '\n¿Desea continuar?';
+            if (!confirm(confirmMessage)) {
+                e.preventDefault();
+            }
+        }
+    });
+</script>
+{% endblock %}

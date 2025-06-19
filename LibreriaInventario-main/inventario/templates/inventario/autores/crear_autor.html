@@ -1,0 +1,125 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Crear Autor{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/autores/crear_autor.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-pen-fancy"></i> Crear Nuevo Autor</h1>
+    <p class="subtitle">Registre un nuevo escritor para los productos de la librería</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card form-card">
+            <div class="card-header">
+                <h5><i class="fas fa-edit"></i> Formulario de Autor</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-floating">
+                        {{ form.nombre }}
+                        <label for="{{ form.nombre.id_for_label }}">
+                            <i class="fas fa-user"></i> Nombre del Autor
+                        </label>
+                        {% if form.nombre.errors %}
+                        <div class="error-message">
+                            {{ form.nombre.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.apellido }}
+                        <label for="{{ form.apellido.id_for_label }}">
+                            <i class="fas fa-user-tag"></i> Apellido del Autor
+                        </label>
+                        {% if form.apellido.errors %}
+                        <div class="error-message">
+                            {{ form.apellido.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.biografia }}
+                        <label for="{{ form.biografia.id_for_label }}">
+                            <i class="fas fa-book-open"></i> Biografía del Autor
+                        </label>
+                        {% if form.biografia.errors %}
+                        <div class="error-message">
+                            {{ form.biografia.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mt-4">
+                        <a href="{% url 'listar_autores' %}" class="btn btn-secondary btn-action">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-action">
+                            <i class="fas fa-save"></i> Crear Autor
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card info-card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Guía de Autores</h5>
+            </div>
+            <div class="card-body">
+                <div class="info-section">
+                    <h6>
+                        <i class="fas fa-lightbulb"></i> ¿Qué es un Autor?
+                    </h6>
+                    <p>Los autores son las personas que escriben los productos literarios como libros, revistas o enciclopedias que se venden en la librería.</p>
+                </div>
+
+                <div class="info-section">
+                    <h6>
+                        <i class="fas fa-list-ul"></i> Información Importante:
+                    </h6>
+                    <ul class="features-list">
+                        <li>Nombre y apellido completos</li>
+                        <li>Biografía detallada</li>
+                        <li>Obras destacadas</li>
+                        <li>Premios y reconocimientos</li>
+                    </ul>
+                </div>
+                
+                <div class="info-section">
+                    <h6>
+                        <i class="fas fa-tips"></i> Consejos Útiles:
+                    </h6>
+                    <p class="small">
+                        <strong>Nombre y Apellido:</strong> Ingrese el nombre completo del autor para facilitar su búsqueda.
+                    </p>
+                    <p class="small">
+                        <strong>Biografía:</strong> Incluya información relevante sobre su carrera literaria, estilo y obras principales.
+                    </p>
+                </div>
+                
+                <div class="alert-custom">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Importante:</strong><br>
+                    No se podrá eliminar un autor que tenga productos asociados en el sistema.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'css_js/autores/crear_autor.js' %}"></script>
+{% endblock %}

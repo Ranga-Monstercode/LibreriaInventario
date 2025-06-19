@@ -1,0 +1,113 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Crear Editorial{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/editoriales/crear_editorial.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-building"></i> Crear Nueva Editorial</h1>
+    <p class="subtitle">Registre una nueva casa editorial para los productos de la librería</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card form-card">
+            <div class="card-header">
+                <h5><i class="fas fa-edit"></i> Formulario de Editorial</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-floating">
+                        {{ form.nombre }}
+                        <label for="{{ form.nombre.id_for_label }}">
+                            <i class="fas fa-tag"></i> Nombre de la Editorial
+                        </label>
+                        {% if form.nombre.errors %}
+                        <div class="error-message">
+                            {{ form.nombre.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.descripcion }}
+                        <label for="{{ form.descripcion.id_for_label }}">
+                            <i class="fas fa-align-left"></i> Descripción de la Editorial
+                        </label>
+                        {% if form.descripcion.errors %}
+                        <div class="error-message">
+                            {{ form.descripcion.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mt-4">
+                        <a href="{% url 'listar_editoriales' %}" class="btn btn-secondary btn-action">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-action">
+                            <i class="fas fa-save"></i> Crear Editorial
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card info-card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Información de Editoriales</h5>
+            </div>
+            <div class="card-body">
+                <div class="info-section">
+                    <h6>
+                        <i class="fas fa-lightbulb"></i> ¿Qué es una Editorial?
+                    </h6>
+                    <p>Las editoriales son las empresas que publican los productos literarios como libros, revistas o enciclopedias que se venden en la librería.</p>
+                </div>
+
+                <div class="info-section">
+                    <h6>
+                        <i class="fas fa-list-ul"></i> Características Importantes:
+                    </h6>
+                    <ul class="features-list">
+                        <li>Nombre único e identificativo</li>
+                        <li>Descripción detallada</li>
+                        <li>Catálogo de publicaciones</li>
+                        <li>Información de contacto</li>
+                    </ul>
+                </div>
+                
+                <div class="info-section">
+                    <h6>
+                        <i class="fas fa-tips"></i> Consejos Útiles:
+                    </h6>
+                    <p class="small">
+                        <strong>Nombre:</strong> Use el nombre oficial de la editorial para facilitar su identificación.
+                    </p>
+                    <p class="small">
+                        <strong>Descripción:</strong> Incluya información relevante sobre el tipo de publicaciones que maneja.
+                    </p>
+                </div>
+                
+                <div class="alert-custom">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Importante:</strong><br>
+                    No se podrá eliminar una editorial que tenga productos asociados en el sistema.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'css_js/editoriales/crear_editorial.js' %}"></script>
+{% endblock %}

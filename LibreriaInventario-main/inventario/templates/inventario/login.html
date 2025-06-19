@@ -1,0 +1,60 @@
+{% extends 'inventario/base.html' %}
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="floating-shapes"></div>
+    
+    <!-- Toggle de tema para login -->
+    <div class="theme-toggle-login">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="loginDarkModeToggle">
+            <label class="form-check-label" for="loginDarkModeToggle">
+                <i class="fas fa-moon" id="loginThemeIcon"></i>
+                <span id="loginThemeText">Modo Oscuro</span>
+            </label>
+        </div>
+    </div>
+    
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fas fa-book-open"></i>
+            <h4>Librería "El gran Poeta"</h4>
+            <p class="mb-0" style="opacity: 0.9;">Iniciar Sesión</p>
+        </div>
+        
+        <div class="login-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Usuario" required>
+                    <label for="username">
+                        <i class="fas fa-user"></i> Usuario
+                    </label>
+                </div>
+                
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" required>
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Contraseña
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'css_js/login.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Movimientos{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/movimientos/listar_movimiento.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center page-header">
+    <h1 class="page-title"><i class="fas fa-exchange-alt me-2"></i>Movimientos</h1>
+    {% if user.perfil.rol == 'bodeguero' %}
+    <a href="{% url 'crear_movimiento' %}" class="btn btn-new">
+        <i class="fas fa-plus me-1"></i> Nuevo Movimiento
+    </a>
+    {% endif %}
+</div>
+
+<div class="movements-card">
+    <div class="movements-header">
+        <h5 class="mb-0 fw-bold text-white"><i class="fas fa-list me-2"></i>Lista de Movimientos</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover movements-table mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">#</th>
+                        <th><i class="fas fa-calendar-alt me-1"></i>Fecha</th>
+                        <th><i class="fas fa-warehouse me-1"></i>Bodega Origen</th>
+                        <th><i class="fas fa-warehouse me-1"></i>Bodega Destino</th>
+                        <th><i class="fas fa-user me-1"></i>Usuario</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movimiento in movimientos %}
+                    <tr>
+                        <td class="ps-4">{{ movimiento.id }}</td>
+                        <td>{{ movimiento.fecha|date:"d/m/Y H:i" }}</td>
+                        <td>{{ movimiento.bodega_origen.nombre }}</td>
+                        <td>{{ movimiento.bodega_destino.nombre }}</td>
+                        <td>{{ movimiento.usuario.username }}</td>
+                        <td class="text-end pe-4">
+                            <a href="{% url 'detalle_movimiento' movimiento.id %}" class="btn btn-sm btn-view">
+                                <i class="fas fa-eye me-1"></i> Ver Detalle
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <i class="fas fa-box-open fa-3x mb-3 text-muted"></i>
+                            <p class="mb-0">No hay movimientos registrados</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
