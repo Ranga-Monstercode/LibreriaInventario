@@ -6,5 +6,5 @@ class InventarioConfig(AppConfig):
     name = 'inventario'
 
 
-def ready(self):
+    def ready(self):
         import inventario.signals
