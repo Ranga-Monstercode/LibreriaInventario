@@ -1,0 +1,285 @@
+{% extends 'inventario/base.html' %}
+{% load custom_filters %}
+
+{% block title %}Usuarios{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/usuarios/listar_usuario.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-users"></i> Gestión de Usuarios</h1>
+    <a href="{% url 'crear_usuario' %}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Nuevo Usuario
+    </a>
+</div>
+
+{% if usuarios %}
+
+{% endif %}
+
+<div class="card users-card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Lista de Usuarios Registrados</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive table-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user"></i> Usuario</th>
+                        <th><i class="fas fa-id-card"></i> Nombre</th>
+                        <th><i class="fas fa-id-card"></i> Apellido</th>
+                        <th><i class="fas fa-id-card"></i> Run</th>
+                        <th><i class="fas fa-envelope"></i> Email</th>
+                        <th><i class="fas fa-user-tag"></i> Rol</th>
+                        <th class="text-center"><i class="fas fa-cogs"></i> Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for perfil in usuarios %}
+                    <tr>
+                        <td>
+                            <div class="username-display">
+                                <i class="fas fa-user-circle"></i>
+                                {{ perfil.usuario.username }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="user-name">
+                                {{ perfil.usuario.first_name|default:"Sin nombre" }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="user-name">
+                                {{ perfil.usuario.last_name|default:"Sin apellido" }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="user-run">
+                                <i class="fas fa-id-card"></i>
+                                {{ perfil.run|formatear_run|default:"Sin RUN" }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="user-email">
+                                <i class="fas fa-at"></i>
+                                {{ perfil.usuario.email|default:"Sin email" }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="role-badge role-{{ perfil.rol }}">
+                                {% if perfil.rol == 'administrador' %}
+                                    <i class="fas fa-crown"></i>
+                                {% elif perfil.rol == 'jefe_bodega' %}
+                                    <i class="fas fa-user-tie"></i>
+                                {% elif perfil.rol == 'bodeguero' %}
+                                    <i class="fas fa-dolly"></i>
+                                {% endif %}
+                                {{ perfil.get_rol_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'editar_usuario' perfil.pk %}" 
+                                    class="action-btn btn-edit" title="Editar Usuario">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if perfil.usuario != request.user %}
+                                <button type="button" class="action-btn btn-delete" title="Eliminar Usuario" 
+                                        data-usuario-id="{{ perfil.pk }}"
+                                        data-usuario-name="{{ perfil.usuario.username }}"
+                                        data-usuario-fullname="{{ perfil.usuario.first_name }} {{ perfil.usuario.last_name }}"
+                                        onclick="confirmDelete(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% else %}
+                                <span class="text-muted small" title="No puedes eliminarte a ti mismo">
+                                    <i class="fas fa-lock"></i> Propio
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="p-0">
+                            <div class="empty-state">
+                                <i class="fas fa-users"></i>
+                                <h4>No hay usuarios registrados</h4>
+                                <p>Comience creando el primer usuario del sistema</p>
+                                <a href="{% url 'crear_usuario' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Crear Primer Usuario
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}    
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- Modal de Confirmación para Eliminar -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación de Usuario
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <i class="fas fa-user-times text-danger" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <h6>¿Está seguro que desea eliminar el usuario?</h6>
+                    <p class="text-muted mb-2">
+                        <strong>Usuario:</strong> <span id="usuarioNameToDelete"></span>
+                    </p>
+                    <p class="text-muted mb-3">
+                        <strong>Nombre:</strong> <span id="usuarioFullNameToDelete"></span>
+                    </p>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>¡ADVERTENCIA CRÍTICA!</strong><br>
+                        Esta acción eliminará permanentemente:
+                        <ul class="text-start mt-2 mb-0">
+                            <li>La cuenta de usuario</li>
+                            <li>Su perfil y configuraciones</li>
+                            <li>El acceso al sistema</li>
+                        </ul>
+                        <strong>Esta acción NO se puede deshacer.</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-user-times"></i> Eliminar Usuario
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+    <script src="{% static 'css_js/usuarios/listar_usuario.js' %}"></script>
+    <script>
+        function confirmDelete(button) {
+            const usuarioId = button.getAttribute('data-usuario-id');
+            const usuarioName = button.getAttribute('data-usuario-name');
+            const usuarioFullName = button.getAttribute('data-usuario-fullname');
+            
+            // Actualizar el contenido del modal
+            document.getElementById('usuarioNameToDelete').textContent = usuarioName;
+            document.getElementById('usuarioFullNameToDelete').textContent = usuarioFullName || 'Sin nombre completo';
+            
+            // Configurar el formulario de eliminación
+            const deleteForm = document.getElementById('deleteForm');
+            deleteForm.action = `{% url 'eliminar_usuario' 0 %}`.replace('0', usuarioId);
+            
+            // Mostrar el modal
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+
+        // Manejar la respuesta después de eliminar
+        document.getElementById('deleteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = this;
+            const formData = new FormData(form);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Mostrar loading
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Eliminando...';
+            submitBtn.disabled = true;
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    // Si no es JSON, asumir éxito
+                    return { success: true, message: 'Usuario eliminado correctamente' };
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    // Cerrar modal
+                    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                    
+                    // Mostrar mensaje de éxito
+                    showAlert('success', data.message || 'Usuario eliminado correctamente');
+                    
+                    // Recargar la página después de un breve delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showAlert('error', data.message || 'Error al eliminar el usuario');
+                    // Restaurar botón
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // En caso de error, asumir que fue exitoso
+                bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                showAlert('success', 'Usuario eliminado correctamente');
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            });
+        });
+
+        function showAlert(type, message) {
+            // Remover alertas existentes
+            const existingAlerts = document.querySelectorAll('.alert.position-fixed');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+                     style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+                    <i class="fas ${iconClass}"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', alertHtml);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert.position-fixed');
+                alerts.forEach(alert => {
+                    if (alert && alert.parentNode) {
+                        alert.remove();
+                    }
+                });
+            }, 5000);
+        }
+    </script>
+{% endblock %}

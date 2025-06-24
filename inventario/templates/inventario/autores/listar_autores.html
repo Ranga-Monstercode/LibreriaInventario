@@ -1,0 +1,219 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Autores{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/autores/listar_autor.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-pen-fancy"></i> Gestión de Autores</h1>
+    {% if user.perfil.rol == 'jefe_bodega' %}
+    <a href="{% url 'crear_autor' %}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Nuevo Autor
+    </a>
+    {% endif %}
+</div>
+
+<div class="card authors-card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Lista de Autores Registrados</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive table-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user"></i> Nombre</th>
+                        <th><i class="fas fa-user-tag"></i> Apellido</th>
+                        <th><i class="fas fa-book-open"></i> Biografía</th>
+                        <th class="text-center"><i class="fas fa-cogs"></i> Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for autor in autores %}
+                    <tr>
+                        <td>
+                            <div class="author-name">
+                                <i class="fas fa-feather-alt"></i>
+                                {{ autor.nombre }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="author-lastname">
+                                <i class="fas fa-signature"></i>
+                                {{ autor.apellido }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="author-biography truncated" 
+                                 title="{{ autor.biografia|default:'Sin biografía disponible' }}">
+                                {{ autor.biografia|default:"Sin biografía disponible"|truncatechars:100 }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                {% if user.perfil.rol == 'jefe_bodega' %}
+                                <a href="{% url 'editar_autor' autor.pk %}" 
+                                   class="action-btn btn-edit" title="Editar Autor">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="action-btn btn-delete" title="Eliminar Autor" 
+                                        data-autor-id="{{ autor.pk }}"
+                                        data-autor-name="{{ autor.nombre }} {{ autor.apellido }}"
+                                        onclick="confirmDelete(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% else %}
+                                <span class="text-muted small">
+                                    <i class="fas fa-lock"></i> Sin permisos
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="p-0">
+                            <div class="empty-state">
+                                <i class="fas fa-pen-fancy"></i>
+                                <h4>No hay autores registrados</h4>
+                                <p>Comience agregando escritores al catálogo de la librería</p>
+                                {% if user.perfil.rol == 'jefe_bodega' %}
+                                <a href="{% url 'crear_autor' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Crear Primer Autor
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- Modal de Confirmación para Eliminar -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <i class="fas fa-pen-fancy text-danger" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <h6>¿Está seguro que desea eliminar el autor?</h6>
+                    <p class="text-muted mb-3">
+                        <strong id="autorNameToDelete"></strong>
+                    </p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Advertencia:</strong> Esta acción no se puede deshacer. 
+                        Todos los productos asociados a este autor podrían verse afectados.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Eliminar Autor
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<br><br><br><br><br><br>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'css_js/autores/listar_autor.js' %}"></script>
+    <script>
+        function confirmDelete(button) {
+            const autorId = button.getAttribute('data-autor-id');
+            const autorName = button.getAttribute('data-autor-name');
+            
+            // Actualizar el contenido del modal
+            document.getElementById('autorNameToDelete').textContent = autorName;
+            
+            // Configurar el formulario de eliminación
+            const deleteForm = document.getElementById('deleteForm');
+            deleteForm.action = `{% url 'eliminar_autor' 0 %}`.replace('0', autorId);
+            
+            // Mostrar el modal
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+
+        // Manejar la respuesta después de eliminar
+        document.getElementById('deleteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = this;
+            const formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Cerrar modal
+                    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                    
+                    // Mostrar mensaje de éxito
+                    showAlert('success', 'Autor eliminado correctamente');
+                    
+                    // Recargar la página después de un breve delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showAlert('error', data.message || 'Error al eliminar el autor');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', 'Error de conexión al eliminar el autor');
+            });
+        });
+
+        function showAlert(type, message) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+                     style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+                    <i class="fas ${iconClass}"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', alertHtml);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                const alert = document.querySelector('.alert');
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+    </script>
+{% endblock %}

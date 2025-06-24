@@ -1,0 +1,72 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Dashboard Bodeguero{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/dashboard_bodeguero.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1><i class="fas fa-dolly"></i> Dashboard de Bodeguero</h1>
+    <p class="subtitle">Bienvenido, {{ user.username }}. Gestiona los movimientos y operaciones diarias.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card operation-card">
+            <div class="card-body">
+                <div class="operation-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <h5 class="card-title">Movimientos de Productos</h5>
+                <p class="card-text">Realice y supervise los movimientos de productos entre diferentes bodegas.</p>
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a href="{% url 'crear_movimiento' %}" class="btn btn-success btn-operation">
+                        <i class="fas fa-plus"></i> Nuevo Movimiento
+                    </a>
+                    <a href="{% url 'listar_movimientos' %}" class="btn btn-primary btn-operation">
+                        <i class="fas fa-list"></i> Ver Movimientos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card operation-card">
+            <div class="card-body">
+                <div class="operation-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h5 class="card-title">Consulta de Productos</h5>
+                <p class="card-text">Visualice y consulte la información de todos los productos disponibles.</p>
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a href="{% url 'listar_productos' %}" class="btn btn-primary btn-operation">
+                        <i class="fas fa-search"></i> Buscar Productos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card operation-card">
+            <div class="card-body">
+                <div class="operation-icon">
+                    <i class="fas fa-warehouse"></i>
+                </div>
+                <h5 class="card-title">Estado de Bodegas</h5>
+                <p class="card-text">Consulte el estado actual y la capacidad de todas las bodegas.</p>
+                <div class="d-flex flex-wrap justify-content-center">
+                    <a href="{% url 'listar_bodegas' %}" class="btn btn-info btn-operation">
+                        <i class="fas fa-eye"></i> Ver Bodegas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br><br><br><br><br><br><br><br><br><br><br><br><br>
+{% endblock %}

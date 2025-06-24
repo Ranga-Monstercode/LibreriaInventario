@@ -1,0 +1,212 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Editoriales{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/editoriales/listar_editorial.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-building"></i> Gestión de Editoriales</h1>
+    {% if user.perfil.rol == 'jefe_bodega' %}
+    <a href="{% url 'crear_editorial' %}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Nueva Editorial
+    </a>
+    {% endif %}
+</div>
+
+<div class="card editorials-card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Lista de Editoriales Registradas</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive table-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-building"></i> Nombre</th>
+                        <th><i class="fas fa-align-left"></i> Descripción</th>
+                        <th class="text-center"><i class="fas fa-cogs"></i> Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for editorial in editoriales %}
+                    <tr>
+                        <td>
+                            <div class="editorial-name">
+                                <i class="fas fa-building"></i>
+                                {{ editorial.nombre }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="editorial-description truncated" 
+                                 title="{{ editorial.descripcion|default:'Sin descripción disponible' }}">
+                                {{ editorial.descripcion|default:"Sin descripción disponible"|truncatechars:80 }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                {% if user.perfil.rol == 'jefe_bodega' %}
+                                <a href="{% url 'editar_editorial' editorial.pk %}" 
+                                   class="action-btn btn-edit" title="Editar Editorial">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="action-btn btn-delete" title="Eliminar Editorial" 
+                                        data-editorial-id="{{ editorial.pk }}"
+                                        data-editorial-name="{{ editorial.nombre }}"
+                                        onclick="confirmDelete(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% else %}
+                                <span class="text-muted small">
+                                    <i class="fas fa-lock"></i> Sin permisos
+                                </span>
+                                {% endif %}
+                            </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="p-0">
+                            <div class="empty-state">
+                                <i class="fas fa-building"></i>
+                                <h4>No hay editoriales registradas</h4>
+                                <p>Comience agregando editoriales al catálogo del sistema</p>
+                                {% if user.perfil.rol == 'jefe_bodega' %}
+                                <a href="{% url 'crear_editorial' %}" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Crear Primera Editorial
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- Modal de Confirmación para Eliminar -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <i class="fas fa-building text-danger" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <h6>¿Está seguro que desea eliminar la editorial?</h6>
+                    <p class="text-muted mb-3">
+                        <strong id="editorialNameToDelete"></strong>
+                    </p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Advertencia:</strong> Esta acción no se puede deshacer. 
+                        Todos los productos asociados a esta editorial podrían verse afectados.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Eliminar Editorial
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<br><br><br><br><br><br>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'css_js/editoriales/listar_editorial.js' %}"></script>
+    <script>
+        function confirmDelete(button) {
+            const editorialId = button.getAttribute('data-editorial-id');
+            const editorialName = button.getAttribute('data-editorial-name');
+            
+            // Actualizar el contenido del modal
+            document.getElementById('editorialNameToDelete').textContent = editorialName;
+            
+            // Configurar el formulario de eliminación
+            const deleteForm = document.getElementById('deleteForm');
+            deleteForm.action = `{% url 'eliminar_editorial' 0 %}`.replace('0', editorialId);
+            
+            // Mostrar el modal
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+
+        // Manejar la respuesta después de eliminar
+        document.getElementById('deleteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = this;
+            const formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Cerrar modal
+                    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                    
+                    // Mostrar mensaje de éxito
+                    showAlert('success', 'Editorial eliminada correctamente');
+                    
+                    // Recargar la página después de un breve delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showAlert('error', data.message || 'Error al eliminar la editorial');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', 'Error de conexión al eliminar la editorial');
+            });
+        });
+
+        function showAlert(type, message) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+                     style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+                    <i class="fas ${iconClass}"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', alertHtml);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                const alert = document.querySelector('.alert');
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+    </script>
+{% endblock %}

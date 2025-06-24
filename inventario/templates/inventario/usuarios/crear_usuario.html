@@ -1,0 +1,204 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Crear Usuario{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/usuarios/crear_usuario.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-user-plus"></i> Crear Nuevo Usuario</h1>
+    <p class="subtitle">Registre un nuevo usuario en el sistema de la librería</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card form-card">
+            <div class="card-header">
+                <h5><i class="fas fa-edit"></i> Formulario de Usuario</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-floating">
+                        {{ form.username }}
+                        <label for="{{ form.username.id_for_label }}">
+                            <i class="fas fa-user"></i> Nombre de Usuario
+                        </label>
+                        {% if form.username.errors %}
+                        <div class="error-message">
+                            {{ form.username.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.first_name }}
+                        <label for="{{ form.first_name.id_for_label }}">
+                            <i class="fas fa-id-card"></i> Nombre
+                        </label>
+                        {% if form.first_name.errors %}
+                        <div class="error-message">
+                            {{ form.first_name.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.last_name }}
+                        <label for="{{ form.last_name.id_for_label }}">
+                            <i class="fas fa-id-card"></i> Apellido
+                        </label>
+                        {% if form.last_name.errors %}
+                        <div class="error-message">
+                            {{ form.last_name.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.email }}
+                        <label for="{{ form.email.id_for_label }}">
+                            <i class="fas fa-envelope"></i> Correo Electrónico
+                        </label>
+                        {% if form.email.errors %}
+                        <div class="error-message">
+                            {{ form.email.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.password1 }}
+                        <label for="{{ form.password1.id_for_label }}">
+                            <i class="fas fa-lock"></i> Contraseña
+                        </label>
+                        {% if form.password1.errors %}
+                        <div class="error-message">
+                            {{ form.password1.errors }}
+                        </div>
+                        {% endif %}
+                        {% if form.password1.help_text %}
+                        <div class="help-text">
+                            <i class="fas fa-info-circle"></i> {{ form.password1.help_text }}
+                        </div>
+                        {% endif %}
+                        <div class="password-strength" id="passwordStrength" style="display: none;">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="strengthFill"></div>
+                            </div>
+                            <small class="text-muted" id="strengthText">Fortaleza de la contraseña</small>
+                        </div>
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.password2 }}
+                        <label for="{{ form.password2.id_for_label }}">
+                            <i class="fas fa-lock"></i> Confirmar Contraseña
+                        </label>
+                        {% if form.password2.errors %}
+                        <div class="error-message">
+                            {{ form.password2.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.run }}
+                        <label for="{{ form.run.id_for_label }}">
+                            <i class="fas fa-id-badge"></i> RUN (sin puntos, con guión)
+                        </label>
+                        {% if form.run.errors %}
+                        <div class="error-message">
+                            {{ form.run.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+
+                    <div class="form-floating">
+                        {{ form.rol }}
+                        <label for="{{ form.rol.id_for_label }}">
+                            <i class="fas fa-user-tag"></i> Rol del Usuario
+                        </label>
+                        {% if form.rol.errors %}
+                        <div class="error-message">
+                            {{ form.rol.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mt-4">
+                        <a href="{% url 'listar_usuarios' %}" class="btn btn-secondary btn-action">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-action">
+                            <i class="fas fa-save"></i> Crear Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card info-card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Información de Roles</h5>
+            </div>
+            <div class="card-body">
+                <div class="role-info">
+                    <div class="role-card admin">
+                        <h6>
+                            <i class="fas fa-crown"></i> Administrador
+                        </h6>
+                        <p>Puede crear usuarios, asignar roles y gestionar todo el sistema.</p>
+                    </div>
+                    
+                    <div class="role-card jefe">
+                        <h6>
+                            <i class="fas fa-user-tie"></i> Jefe de Bodega
+                        </h6>
+                        <p>Puede crear productos, bodegas, editoriales, autores y generar informes.</p>
+                    </div>
+                    
+                    <div class="role-card">
+                        <h6>
+                            <i class="fas fa-dolly"></i> Bodeguero
+                        </h6>
+                        <p>Puede realizar movimientos de productos entre bodegas.</p>
+                    </div>
+                </div>
+                
+                <div class="alert-custom">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Importante:</strong><br>
+                    Un usuario no puede ser Jefe de Bodega y Bodeguero al mismo tiempo. Cada usuario debe tener un rol específico.
+                </div>
+                
+                <div class="security-info">
+                    <h6>
+                        <i class="fas fa-shield-alt"></i> Seguridad del Sistema
+                    </h6>
+                    <p class="small text-muted">
+                        <strong>Contraseña:</strong> Debe contener al menos 8 caracteres, incluyendo letras y números.
+                    </p>
+                    <p class="small text-muted">
+                        <strong>Usuario:</strong> Debe ser único en el sistema y fácil de recordar.
+                    </p>
+                    <p class="small text-muted">
+                        <strong>Email:</strong> Se utilizará para notificaciones y recuperación de contraseña.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'css_js/usuarios/crear_usuario.js' %}"></script>
+{% endblock %}

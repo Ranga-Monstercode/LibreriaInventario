@@ -1,0 +1,282 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Productos{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/productos/listar_producto.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-book"></i> Gestión de Productos</h1>
+    {% if user.perfil.rol == 'jefe_bodega' %}
+    <a href="{% url 'crear_producto' %}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Nuevo Producto
+    </a>
+    {% endif %}
+</div>
+
+<div class="card products-card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Lista de Productos Registrados</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive table-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-book-open"></i> Título</th>
+                        <th><i class="fas fa-tags"></i> Tipo</th>
+                        <th><i class="fas fa-building"></i> Editorial</th>
+                        <th><i class="fas fa-users"></i> Autores</th>
+                        <th><i class="fas fa-calendar"></i> Fecha de Creación</th>
+                        <th><i class="fas fa-warehouse"></i> Bodega</th>
+                        <th><i class="fas fa-sort-numeric-up"></i> Cantidad</th>
+                        <th class="text-center"><i class="fas fa-cogs"></i> Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                    <tr>  
+                        <td>
+                            <strong>{{ producto.titulo }}</strong>
+                        </td>
+                        <td>
+                            <span class="product-type-badge">
+                                {{ producto.get_tipo_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <i class="fas fa-building" style="color: #28a745;"></i>
+                            {{ producto.editorial.nombre }}
+                        </td>
+                        <td>
+                            <div class="authors-list" title="{% for autor in producto.autores.all %}{{ autor.nombre }} {{ autor.apellido }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                                {% for autor in producto.autores.all %}
+                                {{ autor.nombre }} {{ autor.apellido }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="date-display">
+                                {{ producto.fecha_creacion|date:"d/m/Y H:i" }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if producto.inventariobodega_set.all %}
+                                <ul class="list-unstyled mb-0">
+                                    {% for inv in producto.inventariobodega_set.all %}
+                                        <li class="mb-2">  {# Agrega un pequeño margen inferior opcional para mejor separación visual #}
+                                            <span class="warehouse-info"> 
+                                                <i class="fas fa-warehouse"></i> {{ inv.bodega.nombre }}
+                                            </span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <span class="text-muted">Sin bodegas</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if producto.inventariobodega_set.all %}
+                                <ul class="list-unstyled mb-0">
+                                    {% for inv in producto.inventariobodega_set.all %}
+                                        <li class="mb-3">
+                                            <span class="quantity-badge 
+                                                {% if inv.cantidad >= 50 %}quantity-high
+                                                {% elif inv.cantidad >= 20 %}quantity-medium
+                                                {% else %}quantity-low{% endif %}">
+                                                <i class="fas fa-boxes"></i> {{ inv.cantidad }}
+                                            </span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <span class="text-muted">0</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                {% if user.perfil.rol == 'jefe_bodega' %}
+                                <a href="{% url 'editar_producto' producto.id %}" 
+                                    class="action-btn btn-edit" title="Editar Producto">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" 
+                                        class="action-btn btn-delete" 
+                                        title="Eliminar Producto" 
+                                        data-producto-id="{{ producto.id }}"
+                                        data-producto-name="{{ producto.titulo }}"
+                                        onclick="confirmDelete(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% else %}
+                                <span class="text-muted small">
+                                    <i class="fas fa-lock"></i> Sin permisos
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="p-0">
+                            <div class="empty-state">
+                                <i class="fas fa-book-open"></i>
+                                <h4>No hay productos registrados</h4>
+                                <p>Comience agregando productos al inventario de la librería</p>
+                                {% if user.perfil.rol == 'jefe_bodega' %}
+                                <a href="{% url 'crear_producto' %}" class="btn btn-success mt-3">
+                                    <i class="fas fa-plus"></i> Crear Primer Producto
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación para Eliminar -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <i class="fas fa-book text-danger" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <h6>¿Está seguro que desea eliminar el producto?</h6>
+                    <p class="text-muted mb-3">
+                        <strong id="productoNameToDelete"></strong>
+                    </p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Advertencia:</strong> Esta acción no se puede deshacer. 
+                        Se eliminará permanentemente del inventario.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Eliminar Producto
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<br><br><br><br><br><br>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'css_js/productos/listar_producto.js' %}"></script>
+    <script>
+        function confirmDelete(button) {
+            const productoId = button.getAttribute('data-producto-id');
+            const productoName = button.getAttribute('data-producto-name');
+            
+            // Actualizar el contenido del modal
+            document.getElementById('productoNameToDelete').textContent = productoName;
+            
+            // Configurar el formulario de eliminación
+            const deleteForm = document.getElementById('deleteForm');
+            deleteForm.action = `{% url 'eliminar_producto' 0 %}`.replace('0', productoId);
+            
+            // Mostrar el modal
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+
+        // Manejar la respuesta después de eliminar
+        document.getElementById('deleteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const form = this;
+            const formData = new FormData(form);
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Mostrar loading
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Eliminando...';
+            submitBtn.disabled = true;
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Cerrar modal
+                    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                    
+                    // Mostrar mensaje de éxito
+                    showAlert('success', 'Producto eliminado correctamente');
+                    
+                    // Recargar la página después de un breve delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showAlert('error', data.message || 'Error al eliminar el producto');
+                    // Restaurar botón
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', 'Error de conexión al eliminar el producto');
+                // Restaurar botón
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+
+        function showAlert(type, message) {
+            // Remover alertas existentes
+            const existingAlerts = document.querySelectorAll('.alert.position-fixed');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const iconClass = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+                     style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+                    <i class="fas ${iconClass}"></i> ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', alertHtml);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert.position-fixed');
+                alerts.forEach(alert => {
+                    if (alert && alert.parentNode) {
+                        alert.remove();
+                    }
+                });
+            }, 5000);
+        }
+    </script>
+{% endblock %}

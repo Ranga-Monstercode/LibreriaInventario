@@ -1,0 +1,370 @@
+{% extends 'inventario/base.html' %}
+
+{% block title %}Crear Movimiento{% endblock %}
+
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css_js/movimientos/crear_movimiento.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-exchange-alt"></i> Crear Nuevo Movimiento</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card movement-card">
+            <div class="card-header">
+                <h5><i class="fas fa-clipboard-list"></i> Formulario de Movimiento</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="movimientoForm">
+                    {% csrf_token %}
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="{{ form_movimiento.bodega_origen.id_for_label }}" class="form-label">
+                                <i class="fas fa-warehouse text-primary"></i> Bodega de Origen
+                            </label>
+                            <select id="{{ form_movimiento.bodega_origen.id_for_label }}" name="{{ form_movimiento.bodega_origen.html_name }}" class="form-select">
+                                <option value="">---------</option>
+                                {% for bodega in form_movimiento.fields.bodega_origen.queryset %}
+                                    <option value="{{ bodega.id }}" {% if form_movimiento.initial.bodega_origen == bodega.id %}selected{% endif %}>
+                                        {{ bodega.nombre }}
+                                    </option>
+                                {% endfor %}
+                                <option value="sin_bodega">⚠ Productos sin bodega</option>
+                            </select>
+                            <small class="text-muted d-block mt-1">
+                                Puede seleccionar "Productos sin bodega" si desea mover productos aún no registrados en una bodega.
+                            </small>
+                            {% if form_movimiento.bodega_origen.errors %}
+                                <div class="text-danger mt-2">{{ form_movimiento.bodega_origen.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form_movimiento.bodega_destino.id_for_label }}" class="form-label">
+                                <i class="fas fa-warehouse text-success"></i> Bodega de Destino
+                            </label>
+                            {{ form_movimiento.bodega_destino }}
+                            {% if form_movimiento.bodega_destino.errors %}
+                                <div class="text-danger mt-2">{{ form_movimiento.bodega_destino.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="productos-section">
+                        <div class="card-header">
+                            <h6><i class="fas fa-boxes"></i> Productos a Mover</h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="productos-container">
+                                <div class="alert-info-custom">
+                                    <i class="fas fa-info-circle"></i> Seleccione una bodega de origen para ver los productos disponibles.
+                                </div>
+                            </div>
+
+                            <div id="productos-seleccionados" class="mt-4">
+                                <h6 class="mb-3">
+                                    <i class="fas fa-check-circle text-success"></i> Productos Seleccionados
+                                </h6>
+                                <div class="table-responsive">
+                                    <table class="table table-seleccionados" id="tabla-seleccionados">
+                                        <thead>
+                                            <tr>
+                                                <th><i class="fas fa-tag"></i> Producto</th>
+                                                <th><i class="fas fa-boxes"></i> Disponible</th>
+                                                <th><i class="fas fa-arrow-right"></i> A Mover</th>
+                                                <th><i class="fas fa-cogs"></i> Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted">No hay productos seleccionados</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div id="detalles-form-container" style="display:none;">
+                                {{ formset_detalles.management_form }}
+                                {% for form in formset_detalles %}
+                                    <div class="hidden-form-row" style="display: none;">
+                                        {{ form }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <a href="{% url 'listar_movimientos' %}" class="btn btn-secondary-custom">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom" id="guardarBtn" disabled>
+                            <i class="fas fa-save"></i> Guardar Movimiento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card info-card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Información</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Movimiento de productos:</strong> Permite trasladar productos de una bodega a otra.</p>
+                <ol>
+                    <li>Seleccione la bodega de origen.</li>
+                    <li>Seleccione la bodega de destino.</li>
+                    <li>Seleccione los productos y las cantidades a mover.</li>
+                    <li>Guarde el movimiento.</li>
+                </ol>
+                <div class="alert-custom">
+                    <i class="fas fa-exclamation-triangle"></i> Solo puede mover productos que existan en la bodega de origen y en las cantidades disponibles.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    // Datos de productos por bodega (pasados desde la vista)
+    const productosPorBodega = {{ productos_por_bodega|safe }};
+    let productosSeleccionados = [];
+    
+    // Agregar clases de Bootstrap a los campos del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        const formFields = document.querySelectorAll('select');
+        formFields.forEach(field => {
+            field.classList.add('form-select');
+        });
+        
+        // Manejar cambio de bodega origen
+        const bodegaOrigenSelect = document.getElementById('{{ form_movimiento.bodega_origen.id_for_label }}');
+        bodegaOrigenSelect.addEventListener('change', cargarProductos);
+        
+        // Manejar envío del formulario
+        const form = document.getElementById('movimientoForm');
+        form.addEventListener('submit', prepararFormulario);
+    });
+    
+    // Cargar productos de la bodega seleccionada
+    function cargarProductos() {
+        const bodegaId = document.getElementById('{{ form_movimiento.bodega_origen.id_for_label }}').value;
+        const productosContainer = document.getElementById('productos-container');
+        
+        // Limpiar contenedor
+        productosContainer.innerHTML = '';
+        
+        if (!bodegaId) {
+            productosContainer.innerHTML = `
+                <div class="alert-info-custom">
+                    <i class="fas fa-info-circle"></i> 
+                    Seleccione una bodega de origen para ver los productos disponibles.
+                </div>
+            `;
+            document.getElementById('guardarBtn').disabled = true;
+            return;
+        }
+
+        
+        const productos = productosPorBodega[bodegaId] || [];
+        
+        if (productos.length === 0) {
+            productosContainer.innerHTML = `
+                <div class="alert-warning-custom">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    No hay productos disponibles en esta bodega.
+                </div>
+            `;
+            // Deshabilitar botón de guardar
+            document.getElementById('guardarBtn').disabled = true;
+            return;
+        }
+        
+        // Crear lista de productos
+        const productosHTML = productos.map(producto => `
+            <div class="producto-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="producto-info">
+                        <div class="producto-nombre">
+                            <i class="fas fa-book text-primary"></i>
+                            ${producto.nombre}
+                        </div>
+                        <div class="producto-disponible">
+                            <i class="fas fa-boxes text-success"></i>
+                            Disponible: ${producto.cantidad} unidades
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-agregar" onclick="agregarProducto(${producto.id}, '${producto.nombre}', ${producto.cantidad})">
+                        <i class="fas fa-plus"></i> Agregar
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+        productosContainer.innerHTML = productosHTML;
+    }
+    
+    // Agregar producto a la lista de seleccionados
+    function agregarProducto(id, nombre, cantidadDisponible) {
+        // Verificar si ya está en la lista
+        if (productosSeleccionados.some(p => p.id === id)) {
+            alert('Este producto ya está en la lista de seleccionados.');
+            return;
+        }
+        
+        // Agregar a la lista
+        productosSeleccionados.push({
+            id: id,
+            nombre: nombre,
+            cantidadDisponible: cantidadDisponible,
+            cantidadMover: 1
+        });
+        
+        // Actualizar tabla
+        actualizarTablaSeleccionados();
+        
+        // Habilitar botón de guardar si hay productos seleccionados
+        document.getElementById('guardarBtn').disabled = productosSeleccionados.length === 0;
+    }
+    
+    // Eliminar producto de la lista de seleccionados
+    function eliminarProducto(id) {
+        productosSeleccionados = productosSeleccionados.filter(p => p.id !== id);
+        actualizarTablaSeleccionados();
+        
+        // Deshabilitar botón de guardar si no hay productos seleccionados
+        document.getElementById('guardarBtn').disabled = productosSeleccionados.length === 0;
+    }
+    
+    // Actualizar cantidad a mover
+    function actualizarCantidad(id, cantidad) {
+        const producto = productosSeleccionados.find(p => p.id === id);
+        if (producto) {
+            producto.cantidadMover = parseInt(cantidad);
+        }
+    }
+    
+    // Actualizar tabla de productos seleccionados
+    function actualizarTablaSeleccionados() {
+        const tbody = document.querySelector('#tabla-seleccionados tbody');
+        tbody.innerHTML = '';
+        
+        if (productosSeleccionados.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center text-muted">No hay productos seleccionados</td>
+                </tr>
+            `;
+            return;
+        }
+        
+        productosSeleccionados.forEach(producto => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <strong>${producto.nombre}</strong>
+                </td>
+                <td>
+                    <span class="badge bg-success">${producto.cantidadDisponible}</span>
+                </td>
+                <td>
+                    <input type="number" class="form-control form-control-sm" 
+                            value="${producto.cantidadMover}" 
+                            min="1" max="${producto.cantidadDisponible}"
+                            onchange="actualizarCantidad(${producto.id}, this.value)"
+                            style="width: 100px;">
+                </td>
+                <td>
+                    <button type="button" class="btn btn-eliminar btn-sm" onclick="eliminarProducto(${producto.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+    
+    // Preparar formulario antes de enviar
+    function prepararFormulario(event) {
+        // Validar que haya productos seleccionados
+        if (productosSeleccionados.length === 0) {
+            event.preventDefault();
+            alert('Debe seleccionar al menos un producto para realizar el movimiento.');
+            return;
+        }
+        
+        // Validar cantidades
+        for (const producto of productosSeleccionados) {
+            if (producto.cantidadMover <= 0 || producto.cantidadMover > producto.cantidadDisponible) {
+                event.preventDefault();
+                alert(`La cantidad a mover del producto "${producto.nombre}" debe ser mayor a 0 y menor o igual a ${producto.cantidadDisponible}.`);
+                return;
+            }
+        }
+        
+        // Validar que las bodegas sean diferentes
+        const bodegaOrigen = document.getElementById('{{ form_movimiento.bodega_origen.id_for_label }}').value;
+        const bodegaDestino = document.getElementById('{{ form_movimiento.bodega_destino.id_for_label }}').value;
+        
+        if (bodegaOrigen === bodegaDestino) {
+            event.preventDefault();
+            alert('La bodega de origen y destino no pueden ser la misma.');
+            return;
+        }
+        
+        // Agregar campos dinámicos al formulario
+        const formContainer = document.getElementById('detalles-form-container');
+        
+        // Limpiar contenedor
+        while (formContainer.firstChild) {
+            formContainer.removeChild(formContainer.firstChild);
+        }
+        
+        // Agregar management form
+        const mgmtForm = document.createElement('input');
+        mgmtForm.type = 'hidden';
+        mgmtForm.name = 'detalles-TOTAL_FORMS';
+        mgmtForm.value = productosSeleccionados.length;
+        formContainer.appendChild(mgmtForm);
+        
+        const mgmtFormInitial = document.createElement('input');
+        mgmtFormInitial.type = 'hidden';
+        mgmtFormInitial.name = 'detalles-INITIAL_FORMS';
+        mgmtFormInitial.value = '0';
+        formContainer.appendChild(mgmtFormInitial);
+        
+        const mgmtFormMax = document.createElement('input');
+        mgmtFormMax.type = 'hidden';
+        mgmtFormMax.name = 'detalles-MAX_NUM_FORMS';
+        mgmtFormMax.value = '1000';
+        formContainer.appendChild(mgmtFormMax);
+        
+        // Agregar campos para cada producto
+        productosSeleccionados.forEach((producto, index) => {
+            const productoInput = document.createElement('input');
+            productoInput.type = 'hidden';
+            productoInput.name = `detalles-${index}-producto`;
+            productoInput.value = producto.id;
+            formContainer.appendChild(productoInput);
+            
+            const cantidadInput = document.createElement('input');
+            cantidadInput.type = 'hidden';
+            cantidadInput.name = `detalles-${index}-cantidad`;
+            cantidadInput.value = producto.cantidadMover;
+            formContainer.appendChild(cantidadInput);
+        });
+    }
+</script>
+{% endblock %}
